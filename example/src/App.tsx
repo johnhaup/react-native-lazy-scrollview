@@ -1,31 +1,57 @@
-import * as React from 'react';
+import React, { useState } from 'react';
+import { Dimensions, SafeAreaView, Text, View } from 'react-native';
+import { LazyChild, LazyScrollView } from 'react-native-lazy-scrollview';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-lazy-scrollview';
+type Child = {
+  name: string;
+  height: number;
+  backgroundColor: string;
+};
 
-export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+const COMPS = [
+  { name: 'one', height: 400, backgroundColor: 'red' },
+  { name: 'two', height: 800, backgroundColor: 'blue' },
+  { name: 'three', height: 200, backgroundColor: 'yellow' },
+  { name: 'four', height: 500, backgroundColor: 'green' },
+  { name: 'five', height: 400, backgroundColor: 'pink' },
+];
 
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
+function ColorBlock({
+  name,
+  height: injectHeight,
+  backgroundColor: injected,
+}: Child) {
+  const [backgroundColor, setBgColor] = useState(injected);
+  const [height, setHeight] = useState(injectHeight);
+
+  const onThresholdPass = () => {
+    setBgColor('gray');
+    setHeight(injectHeight * 3);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
+    <LazyChild onThresholdPass={onThresholdPass}>
+      <View
+        style={{
+          width: Dimensions.get('screen').width,
+          height,
+          backgroundColor,
+        }}
+      >
+        <Text>{name}</Text>
+      </View>
+    </LazyChild>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});
+export const App = () => {
+  const renderItem = (props: Child, index: number) => {
+    return <ColorBlock key={`anim-child-${index}`} {...props} />;
+  };
+
+  return (
+    <SafeAreaView>
+      <LazyScrollView offset={-400}>{COMPS.map(renderItem)}</LazyScrollView>
+    </SafeAreaView>
+  );
+};
