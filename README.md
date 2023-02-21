@@ -9,7 +9,7 @@ This library provides an easy way to trigger logic when a child of a `ScrollView
 ```sh
 yarn add react-native-lazy-scrollview
 ```
-This library requires reanimated.  Follow their [installtion instructions](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation).
+This library requires reanimated.  Follow their [installation instructions](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation).
 
 ## API
 **LazyScrollView**
