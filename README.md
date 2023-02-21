@@ -1,9 +1,9 @@
 # react-native-lazy-scrollview
 
-Lazy ScrollView for React Native brah
+Lazy ScrollView for React Native.
 
 ## Motivation
-Make it easy to toggle components into an "active" state based on their position in a scrollview.  This differs from lazy loading more content in a list, as i wanted the user to be able to scroll a view and see loaders, but only run the api calls (or any other conditional render logic) if those views passed a certain threshold on scroll.
+This library provides an easy way to trigger logic when a child of a `ScrollView` passes a threshold scroll value.
 
 ## Installation
 ```sh
@@ -11,6 +11,16 @@ yarn add react-native-lazy-scrollview
 ```
 This library requires reanimated.  Follow their [installtion instructions](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation).
 
+## API
+**LazyScrollView**
+| Prop | Type | Optional | Default | Description |
+| --- | --- | --- | --- | --- |
+| offset | `number` | Yes | 0 | How far above or below the bottom of the `ScrollView` the threshold trigger is.  Negative is above, postive it below.
+
+**LazyChild**
+| Prop | Type | Optional | Default | Description |
+| --- | --- | --- | --- | --- |
+| onThresholdPass | `function` | No | - | Callback that will fire when top of `View` passes threshold trigger.
 
 
 ## Usage
@@ -28,7 +38,8 @@ import {
 export function MyCoolHomeScreen() {
   return (
     <SafeAreaView>
-      <LazyScrollView offset={-400}>
+      // Trigger onThresholdReached when child is 100 pixels above the bottom
+      <LazyScrollView offset={-100}>
         <CoolComponentA />
         <CoolComponentB />
         <CoolComponentC />
@@ -40,22 +51,10 @@ export function MyCoolHomeScreen() {
 // CoolComponentC.tsx
 import { View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
-
-function Content({ data }) {
-  return (
-    <View>
-      // A Cool Component that uses data
-    </View>
-  )
-}
-
-function SkeletonLoader() {
-  return // Loader componen
-}
-
+import { ContentView,  SkeletonLoader } from './components';
 
 export function CoolComponentC() {
-  const [data, setData] = useState(false);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const onThresholdPass = async () => {
@@ -68,10 +67,14 @@ export function CoolComponentC() {
     }
   };
 
+  if (!loading && !data) {
+    return null;  // Or maybe some error state if you're feeling fancy
+  }
+
   return (
     <LazyChild onThresholdPass={onThresholdPass}>
       {
-        loading ? <SkeletonLoader /> : <Content data={data} />
+        loading ? <SkeletonLoader /> : <ContentView data={data} />
       }
     </LazyChild>
   );
