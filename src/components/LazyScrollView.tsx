@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -12,7 +12,7 @@ export function LazyScrollView({
   children,
   offset: injectedOffset,
 }: {
-  children: React.ReactNode[];
+  children: ReactNode | ReactNode[];
   offset?: number;
 }) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -20,7 +20,7 @@ export function LazyScrollView({
   const containerHeight = useSharedValue(0);
   const offset = useSharedValue(injectedOffset || 0);
 
-  const scrollValue = useDerivedValue(
+  const triggerValue = useDerivedValue(
     () => transY.value + containerHeight.value + offset.value
   );
 
@@ -42,9 +42,8 @@ export function LazyScrollView({
       onScroll={scrollHandler}
       scrollEventThrottle={16}
       onLayout={onLayout}
-      showsHorizontalScrollIndicator={false}
     >
-      <AnimatedContext.Provider value={scrollValue}>
+      <AnimatedContext.Provider value={triggerValue}>
         {children}
       </AnimatedContext.Provider>
     </Animated.ScrollView>
