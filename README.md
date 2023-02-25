@@ -1,8 +1,14 @@
-# react-native-lazy-scrollview
+<div align="center">
+  <h1>react-native-lazy-scrollview</h1>
+  <a href="https://www.youtube.com/watch?v=3jqTqrGtGjg">
+    <img alt="lazy man" width=150 src="lazy.svg">
+  </a>
+  <p>Lazy ScrollView for React Native.</p>
+</div>
+<hr />
 
-Lazy ScrollView for React Native.
+[![CI](https://github.com/johnhaup/react-native-lazy-scrollview/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/johnhaup/react-native-lazy-scrollview/actions/workflows/ci.yml)
 
-![Jest coverage](./badges/coverage-jest%20coverage.svg)
 
 ## Motivation
 This library provides an easy way to trigger logic when a child of a `ScrollView` passes a threshold scroll value.

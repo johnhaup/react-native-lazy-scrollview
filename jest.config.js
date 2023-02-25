@@ -11,5 +11,4 @@ module.exports = {
   transformIgnorePatterns: [
     '<rootDir>/node_modules/(?!react-native-reanimated|@react-native|react-native)',
   ],
-  coverageReporters: ['json-summary'],
 };
