@@ -2,6 +2,8 @@
 
 Lazy ScrollView for React Native.
 
+![Jest coverage](./badges/coverage-jest%20coverage.svg)
+
 ## Motivation
 This library provides an easy way to trigger logic when a child of a `ScrollView` passes a threshold scroll value.
 
