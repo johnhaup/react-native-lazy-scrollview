@@ -1,4 +1,10 @@
-import React, { ReactNode } from 'react';
+import React, {
+  cloneElement,
+  isValidElement,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedRef,
@@ -6,7 +12,7 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
-import { AnimatedContext } from '../context/AnimatedContext';
+import { LazyChild } from './LazyChild';
 
 export function LazyScrollView({
   children,
@@ -36,6 +42,43 @@ export function LazyScrollView({
     }
   };
 
+  const hydrateChild = useCallback(
+    (child: ReactNode): JSX.Element | null => {
+      if (isValidElement(child)) {
+        const elementChildren = child.props.children
+          ? Array.isArray(child.props.children)
+            ? child.props.children.map(hydrateChild)
+            : hydrateChild(child.props.children)
+          : undefined;
+
+        console.log({ elementChildren });
+        if (child.type === LazyChild) {
+          return cloneElement(child, {
+            ...child.props,
+            children: elementChildren,
+            triggerValue,
+          });
+        }
+
+        return cloneElement(child, {
+          ...child.props,
+          children: elementChildren,
+        });
+      }
+
+      return null;
+    },
+    [triggerValue]
+  );
+
+  const hydratedChildren = useMemo(
+    () =>
+      Array.isArray(children)
+        ? children.map(hydrateChild)
+        : hydrateChild(children),
+    [children, hydrateChild]
+  );
+
   return (
     <Animated.ScrollView
       ref={scrollRef}
@@ -43,9 +86,7 @@ export function LazyScrollView({
       scrollEventThrottle={16}
       onLayout={onLayout}
     >
-      <AnimatedContext.Provider value={triggerValue}>
-        {children}
-      </AnimatedContext.Provider>
+      {hydratedChildren}
     </Animated.ScrollView>
   );
 }
