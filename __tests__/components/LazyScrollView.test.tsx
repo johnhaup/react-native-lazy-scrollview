@@ -7,8 +7,8 @@ import {
 } from '@testing-library/react-native';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { LazyScrollView } from '../../components/LazyScrollView';
-import { useAnimatedContext } from '../../context/AnimatedContext';
+import { LazyScrollView } from '../../src/components/LazyScrollView';
+import { useAnimatedContext } from '../../src/context/AnimatedContext';
 
 describe('LazyScrollView', () => {
   const SCROLLVIEW_HEIGHT = 300;

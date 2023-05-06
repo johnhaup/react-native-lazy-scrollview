@@ -8,8 +8,8 @@ import {
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { LazyChild } from '../../components/LazyChild';
-import { LazyScrollView } from '../../components/LazyScrollView';
+import { LazyChild } from '../../src/components/LazyChild';
+import { LazyScrollView } from '../../src/components/LazyScrollView';
 
 describe('LazyChild', () => {
   const onThresholdPassOne = jest.fn();
