@@ -13,7 +13,8 @@
 
 To provide an easy way to trigger logic when a child of a `ScrollView` passes a threshold scroll value.
 
-<img alt="demo" src="https://media1.giphy.com/media/8JpkAsi9FOX763FIEB/giphy.gif" />
+<img alt="demo" src="./__tests__/demo.gif" />
+<video src='./__tests__/demo.mp4'/>
 
 ## Installation
 
