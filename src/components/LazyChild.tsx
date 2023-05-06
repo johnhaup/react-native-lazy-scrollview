@@ -7,6 +7,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAnimatedContext } from '../context/AnimatedContext';
 
+/**
+ * @param onThresholdPass - callback to fire when the LazyChild's top position passes the LazyScrollView's offset
+ * @returns Wrapper component to wrap your components in.  Components wrapped in LazyChild will trigger their onThresholdPass callback when their top position passes the LazyScrollView's offset
+ */
+
 export function LazyChild({
   children,
   onThresholdPass,

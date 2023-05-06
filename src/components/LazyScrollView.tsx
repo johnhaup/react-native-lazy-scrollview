@@ -8,9 +8,19 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
 
-interface Props extends React.ComponentProps<typeof Animated.ScrollView> {
+interface Props
+  extends Omit<
+    React.ComponentProps<typeof Animated.ScrollView>,
+    'onLayout' | 'onScroll' | 'ref' | 'scrollEventThrottle'
+  > {
   offset?: number;
 }
+
+/**
+ * @param offset - optional - How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Defaults to 0 (bottom of ScrollView).
+ * @param ...rest - optional - All other props are passed to the underlying ScrollView. onLayout, onScroll, ref, and scrollEventThrottle are all handled internally.
+ * @returns ScrollView to wrap you components in.  Components wrapped in LazyChild will trigger their onThresholdPass callback when their top position passes the LazyScrollView's offset
+ */
 
 export function LazyScrollView({
   children,
@@ -41,10 +51,10 @@ export function LazyScrollView({
   return (
     <Animated.ScrollView
       {...rest}
-      ref={scrollRef}
-      onScroll={scrollHandler}
-      scrollEventThrottle={16}
       onLayout={onLayout}
+      onScroll={scrollHandler}
+      ref={scrollRef}
+      scrollEventThrottle={16}
     >
       <AnimatedContext.Provider value={triggerValue}>
         {children}
