@@ -13,7 +13,7 @@
 
 To provide an easy way to trigger logic when a child of a `ScrollView` passes a threshold scroll value.
 
-<iframe src="https://giphy.com/embed/8JpkAsi9FOX763FIEB" width="222" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+<img alt="demo" src="https://giphy.com/embed/8JpkAsi9FOX763FIEB" width="222" height="480" />
 
 ## Installation
 
