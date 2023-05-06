@@ -19,9 +19,7 @@ jobs:
 
       - name: Create NPM config
         run: |
-          npm config set //npm.pkg.github.com/:_authToken $NPM_AUTH_TOKEN
-          npm config set https://registry.npmjs.org/
-          npm config set strict-ssl=false
+          npm config set //registry.npmjs.org/:_authToken $NPM_AUTH_TOKEN
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
