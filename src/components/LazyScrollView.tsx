@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import Animated, {
+  useAnimatedReaction,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useDerivedValue,
@@ -27,25 +28,40 @@ export function LazyScrollView({
   offset: injectedOffset,
   ...rest
 }: Props) {
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const transY = useSharedValue(0);
-  const containerHeight = useSharedValue(0);
-  const offset = useSharedValue(injectedOffset || 0);
+  const _scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const _offset = useSharedValue(injectedOffset || 0);
+  const _transY = useSharedValue(0);
+  const _containerHeight = useSharedValue(0);
+  const _contentHeight = useSharedValue(0);
+  const _distanceFromEnd = useDerivedValue(
+    () => _contentHeight.value - _transY.value - _containerHeight.value
+  );
 
+  const hasReachedEnd = useSharedValue(false);
   const triggerValue = useDerivedValue(
-    () => transY.value + containerHeight.value + offset.value
+    () => _transY.value + _containerHeight.value + _offset.value
+  );
+
+  useAnimatedReaction(
+    () => {
+      return _contentHeight.value > 0 && _distanceFromEnd.value <= 1;
+    },
+    (reachedEnd) => {
+      if (reachedEnd && !hasReachedEnd.value) {
+        hasReachedEnd.value = true;
+      }
+    }
   );
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      transY.value = event.contentOffset.y;
+      _transY.value = event.contentOffset.y;
+      _contentHeight.value = event.contentSize.height;
     },
   });
 
   const onLayout = (e: LayoutChangeEvent) => {
-    if (containerHeight.value !== e.nativeEvent.layout.height) {
-      containerHeight.value = e.nativeEvent.layout.height;
-    }
+    _containerHeight.value = e.nativeEvent.layout.height;
   };
 
   return (
@@ -53,10 +69,15 @@ export function LazyScrollView({
       {...rest}
       onLayout={onLayout}
       onScroll={scrollHandler}
-      ref={scrollRef}
+      ref={_scrollRef}
       scrollEventThrottle={16}
     >
-      <AnimatedContext.Provider value={triggerValue}>
+      <AnimatedContext.Provider
+        value={{
+          hasReachedEnd,
+          triggerValue,
+        }}
+      >
         {children}
       </AnimatedContext.Provider>
     </Animated.ScrollView>

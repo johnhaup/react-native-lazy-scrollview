@@ -1,5 +1,10 @@
 import { createContext, useContext } from 'react';
 
-export const AnimatedContext = createContext({ value: 0 });
+const initialContext = {
+  hasReachedEnd: { value: false },
+  triggerValue: { value: 0 },
+};
+
+export const AnimatedContext = createContext(initialContext);
 
 export const useAnimatedContext = () => useContext(AnimatedContext);
