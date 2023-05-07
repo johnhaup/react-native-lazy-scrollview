@@ -14,10 +14,10 @@ describe('LazyScrollView', () => {
   const SCROLLVIEW_HEIGHT = 300;
 
   function Child() {
-    const scrollValue = useAnimatedContext();
+    const { triggerValue } = useAnimatedContext();
     return (
       <View>
-        <Text>{`Trigger Scroll:${scrollValue.value}`}</Text>
+        <Text>{`Trigger Scroll:${triggerValue.value}`}</Text>
       </View>
     );
   }
@@ -84,6 +84,9 @@ describe('LazyScrollView', () => {
         nativeEvent: {
           contentOffset: {
             y: SCROLL_VALUE,
+          },
+          contentSize: {
+            height: SCROLLVIEW_HEIGHT,
           },
         },
       });
