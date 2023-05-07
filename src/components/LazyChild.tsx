@@ -19,8 +19,8 @@ export function LazyChild({
   children: React.ReactNode;
   onThresholdPass: () => void;
 }) {
-  const threshold = useAnimatedContext();
-  const animatedY = useSharedValue(0);
+  const { triggerValue, hasReachedEnd } = useAnimatedContext();
+  const topOfView = useSharedValue(0);
   const hasFiredTrigger = useSharedValue(false);
 
   const handleTrigger = () => {
@@ -32,7 +32,7 @@ export function LazyChild({
 
   useAnimatedReaction(
     () => {
-      return threshold.value > animatedY.value;
+      return hasReachedEnd.value || triggerValue.value > topOfView.value;
     },
     (hasPassedThreshold) => {
       if (hasPassedThreshold) {
@@ -42,8 +42,8 @@ export function LazyChild({
   );
 
   const onLayout = (e: LayoutChangeEvent) => {
-    if (animatedY.value !== e.nativeEvent.layout.y) {
-      animatedY.value = e.nativeEvent.layout.y;
+    if (topOfView.value !== e.nativeEvent.layout.y) {
+      topOfView.value = e.nativeEvent.layout.y;
     }
   };
 
