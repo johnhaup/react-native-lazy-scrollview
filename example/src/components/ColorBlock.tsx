@@ -31,9 +31,11 @@ export function ColorBlock({ uri }: { uri: string | null }) {
     );
   }
 
+  const aspectRatio = triggered ? 1 / 2 : 1;
+
   return (
     <LazyChild onThresholdPass={onThresholdPass}>
-      <View style={styles.container}>
+      <View style={[styles.container, { aspectRatio }]}>
         {triggered ? (
           <Image source={{ uri }} style={styles.image} />
         ) : (
@@ -60,5 +62,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'white',
   },
-  image: { aspectRatio: 1, width: '100%' },
+  image: { width: '100%', height: '100%' },
 });
