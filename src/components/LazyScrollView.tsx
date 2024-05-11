@@ -1,10 +1,10 @@
-import React from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import React, { useRef } from 'react';
+import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedReaction,
   useAnimatedRef,
-  useAnimatedScrollHandler,
   useDerivedValue,
+  useScrollViewOffset,
   useSharedValue,
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
@@ -29,22 +29,28 @@ export function LazyScrollView({
   ...rest
 }: Props) {
   const _scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const _wrapperRef = useRef<View>(null);
+
   const _offset = useSharedValue(injectedOffset || 0);
-  const _transY = useSharedValue(0);
   const _containerHeight = useSharedValue(0);
   const _contentHeight = useSharedValue(0);
-  const _distanceFromEnd = useDerivedValue(
-    () => _contentHeight.value - _transY.value - _containerHeight.value
-  );
-
+  const _scrollViewTopY = useSharedValue(0);
+  /**
+   * Starts at 0 and increases as the user scrolls down
+   */
+  const scrollValue = useScrollViewOffset(_scrollRef);
   const hasReachedEnd = useSharedValue(false);
   const triggerValue = useDerivedValue(
-    () => _transY.value + _containerHeight.value + _offset.value
+    () => _containerHeight.value + _offset.value
   );
 
   useAnimatedReaction(
     () => {
-      return _contentHeight.value > 0 && _distanceFromEnd.value <= 1;
+      if (!_contentHeight.value || !_containerHeight.value) {
+        return false;
+      }
+
+      return scrollValue.value >= _contentHeight.value - _containerHeight.value;
     },
     (reachedEnd) => {
       if (reachedEnd && !hasReachedEnd.value) {
@@ -53,32 +59,37 @@ export function LazyScrollView({
     }
   );
 
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      _transY.value = event.contentOffset.y;
-      _contentHeight.value = event.contentSize.height;
-    },
-  });
-
   const onLayout = (e: LayoutChangeEvent) => {
     _containerHeight.value = e.nativeEvent.layout.height;
+    _wrapperRef.current?.measureInWindow(
+      (_: number, y: number, _2: number, height: number) => {
+        _scrollViewTopY.value = y;
+        _contentHeight.value = height;
+      }
+    );
+  };
+
+  const onContentContainerLayout = (e: LayoutChangeEvent) => {
+    _contentHeight.value = e.nativeEvent.layout.height;
   };
 
   return (
     <Animated.ScrollView
       {...rest}
-      onLayout={onLayout}
-      onScroll={scrollHandler}
       ref={_scrollRef}
       scrollEventThrottle={16}
+      onLayout={onLayout}
     >
       <AnimatedContext.Provider
         value={{
           hasReachedEnd,
           triggerValue,
+          scrollValue,
         }}
       >
-        {children}
+        <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
+          {children}
+        </View>
       </AnimatedContext.Provider>
     </Animated.ScrollView>
   );

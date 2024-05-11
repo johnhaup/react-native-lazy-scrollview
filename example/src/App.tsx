@@ -4,6 +4,7 @@ import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LazyScrollView } from 'react-native-lazy-scrollview';
 import { ColorBlock } from './components/ColorBlock';
 import shuffle from 'lodash/shuffle';
+import { random } from 'lodash';
 
 const ALBUMS = [
   'https://audioxide.com/api/images/album-artwork/in-utero-nirvana-medium-square.jpg',
@@ -24,7 +25,7 @@ const OFFSETS = [-100, -500];
 
 export default function App() {
   const renderBlock = (uri: string | null, i: number) => (
-    <ColorBlock key={`child_${i}`} uri={uri} />
+    <ColorBlock key={`child_${i}`} uri={uri} nested={random(1) === 1} />
   );
 
   const renderScrollView = (offset: number) => (
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   scrollview: {
-    paddingVertical: 40,
+    // paddingVertical: 40,
   },
   offsetBar: {
     position: 'absolute',
