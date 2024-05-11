@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
-  useAnimatedReaction,
   useAnimatedRef,
   useDerivedValue,
   useScrollViewOffset,
@@ -39,39 +38,36 @@ export function LazyScrollView({
    * Starts at 0 and increases as the user scrolls down
    */
   const scrollValue = useScrollViewOffset(_scrollRef);
-  const hasReachedEnd = useSharedValue(false);
+  const hasReachedEnd = useDerivedValue(() => {
+    if (!_contentHeight.value || !_containerHeight.value) {
+      return false;
+    }
+
+    return scrollValue.value >= _contentHeight.value - _containerHeight.value;
+  });
   const triggerValue = useDerivedValue(
     () => _containerHeight.value + _offset.value
   );
 
-  useAnimatedReaction(
-    () => {
-      if (!_contentHeight.value || !_containerHeight.value) {
-        return false;
-      }
-
-      return scrollValue.value >= _contentHeight.value - _containerHeight.value;
+  const onLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      _containerHeight.value = e.nativeEvent.layout.height;
+      _wrapperRef.current?.measureInWindow(
+        (_: number, y: number, _2: number, height: number) => {
+          _scrollViewTopY.value = y;
+          _contentHeight.value = height;
+        }
+      );
     },
-    (reachedEnd) => {
-      if (reachedEnd && !hasReachedEnd.value) {
-        hasReachedEnd.value = true;
-      }
-    }
+    [_containerHeight, _contentHeight, _scrollViewTopY]
   );
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    _containerHeight.value = e.nativeEvent.layout.height;
-    _wrapperRef.current?.measureInWindow(
-      (_: number, y: number, _2: number, height: number) => {
-        _scrollViewTopY.value = y;
-        _contentHeight.value = height;
-      }
-    );
-  };
-
-  const onContentContainerLayout = (e: LayoutChangeEvent) => {
-    _contentHeight.value = e.nativeEvent.layout.height;
-  };
+  const onContentContainerLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      _contentHeight.value = e.nativeEvent.layout.height;
+    },
+    [_contentHeight]
+  );
 
   return (
     <Animated.ScrollView

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Animated, {
   measure,
   runOnJS,
@@ -24,12 +24,12 @@ export function LazyChild({
   const _viewRef = useAnimatedRef<Animated.View>();
   const hasFiredTrigger = useSharedValue(false);
 
-  const handleTrigger = () => {
+  const handleTrigger = useCallback(() => {
     if (!hasFiredTrigger.value) {
       hasFiredTrigger.value = true;
       onThresholdPass();
     }
-  };
+  }, [hasFiredTrigger, onThresholdPass]);
 
   useAnimatedReaction(
     () => {
