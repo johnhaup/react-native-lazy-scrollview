@@ -1,8 +1,9 @@
 import React from 'react';
-import type { LayoutChangeEvent } from 'react-native';
 import Animated, {
+  measure,
   runOnJS,
   useAnimatedReaction,
+  useAnimatedRef,
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAnimatedContext } from '../context/AnimatedContext';
@@ -19,8 +20,8 @@ export function LazyChild({
   children: React.ReactNode;
   onThresholdPass: () => void;
 }) {
-  const { triggerValue, hasReachedEnd } = useAnimatedContext();
-  const topOfView = useSharedValue(0);
+  const { triggerValue, hasReachedEnd, scrollValue } = useAnimatedContext();
+  const _viewRef = useAnimatedRef<Animated.View>();
   const hasFiredTrigger = useSharedValue(false);
 
   const handleTrigger = () => {
@@ -32,7 +33,18 @@ export function LazyChild({
 
   useAnimatedReaction(
     () => {
-      return hasReachedEnd.value || triggerValue.value > topOfView.value;
+      const measurement = measure(_viewRef);
+
+      if (hasReachedEnd.value) {
+        return true;
+      }
+
+      // scrollValue only here to make the reactoin fire
+      if (measurement !== null && scrollValue.value > -1) {
+        return measurement.pageY < triggerValue.value && !hasFiredTrigger.value;
+      }
+
+      return false;
     },
     (hasPassedThreshold) => {
       if (hasPassedThreshold) {
@@ -41,11 +53,5 @@ export function LazyChild({
     }
   );
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    if (topOfView.value !== e.nativeEvent.layout.y) {
-      topOfView.value = e.nativeEvent.layout.y;
-    }
-  };
-
-  return <Animated.View onLayout={onLayout}>{children}</Animated.View>;
+  return <Animated.View ref={_viewRef}>{children}</Animated.View>;
 }

@@ -11,7 +11,13 @@ const NO_LAZY_CHILD_BACKGROUNDS = [
   '#1e90ff',
 ];
 
-export function ColorBlock({ uri }: { uri: string | null }) {
+export function ColorBlock({
+  uri,
+  nested,
+}: {
+  uri: string | null;
+  nested?: boolean;
+}) {
   const [triggered, setTriggered] = useState(false);
 
   const onThresholdPass = () => {
@@ -19,9 +25,9 @@ export function ColorBlock({ uri }: { uri: string | null }) {
     setTriggered(true);
   };
 
-  if (!uri) {
-    const backgroundColor = sample(NO_LAZY_CHILD_BACKGROUNDS);
+  const backgroundColor = sample(NO_LAZY_CHILD_BACKGROUNDS);
 
+  if (!uri) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
         <Text style={styles.text}>
@@ -32,6 +38,25 @@ export function ColorBlock({ uri }: { uri: string | null }) {
   }
 
   const aspectRatio = triggered ? 1 / 2 : 1;
+
+  if (nested) {
+    return (
+      <View style={[styles.nested, { backgroundColor }]}>
+        <Text style={styles.text}>
+          I am not wrapped in LazyChild, but my child is!
+        </Text>
+        <LazyChild onThresholdPass={onThresholdPass}>
+          <View style={[styles.container, { aspectRatio }]}>
+            {triggered ? (
+              <Image source={{ uri }} style={styles.image} />
+            ) : (
+              <ActivityIndicator />
+            )}
+          </View>
+        </LazyChild>
+      </View>
+    );
+  }
 
   return (
     <LazyChild onThresholdPass={onThresholdPass}>
@@ -63,4 +88,14 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   image: { width: '100%', height: '100%' },
+  nested: {
+    paddingVertical: 100,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginVertical: 8,
+  },
+  nestedText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
 });
