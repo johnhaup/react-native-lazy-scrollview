@@ -75,6 +75,8 @@ export function LazyScrollView({
       ref={_scrollRef}
       scrollEventThrottle={16}
       onLayout={onLayout}
+      // TODO handle x & width values if horizontal is true
+      horizontal={false}
     >
       <AnimatedContext.Provider
         value={{
