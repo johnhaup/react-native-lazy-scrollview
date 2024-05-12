@@ -46,7 +46,7 @@ export function LazyScrollView({
     return scrollValue.value >= _contentHeight.value - _containerHeight.value;
   });
   const triggerValue = useDerivedValue(
-    () => _containerHeight.value + _offset.value
+    () => _containerHeight.value + _offset.value + _scrollViewTopY.value
   );
 
   const onLayout = useCallback(
