@@ -22,26 +22,32 @@ export function LazyChild({
 }) {
   const { triggerValue, hasReachedEnd, scrollValue } = useAnimatedContext();
   const _viewRef = useAnimatedRef<Animated.View>();
-  const hasFiredTrigger = useSharedValue(false);
+  const _hasFiredTrigger = useSharedValue(false);
 
   const handleTrigger = useCallback(() => {
-    if (!hasFiredTrigger.value) {
-      hasFiredTrigger.value = true;
+    if (!_hasFiredTrigger.value) {
+      _hasFiredTrigger.value = true;
       onThresholdPass();
     }
-  }, [hasFiredTrigger, onThresholdPass]);
+  }, [_hasFiredTrigger, onThresholdPass]);
 
   useAnimatedReaction(
     () => {
-      const measurement = measure(_viewRef);
+      if (_hasFiredTrigger.value) {
+        return false;
+      }
 
       if (hasReachedEnd.value) {
         return true;
       }
 
-      // scrollValue only here to make the reactoin fire
+      const measurement = measure(_viewRef);
+
+      // scrollValue only here to make the reaction fire
       if (measurement !== null && scrollValue.value > -1) {
-        return measurement.pageY < triggerValue.value && !hasFiredTrigger.value;
+        return (
+          measurement.pageY < triggerValue.value && !_hasFiredTrigger.value
+        );
       }
 
       return false;
