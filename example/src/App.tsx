@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { random } from 'lodash';
+import shuffle from 'lodash/shuffle';
+import { StyleSheet, Text, View } from 'react-native';
 import { LazyScrollView } from 'react-native-lazy-scrollview';
 import { ColorBlock } from './components/ColorBlock';
-import shuffle from 'lodash/shuffle';
-import { random } from 'lodash';
 
 const ALBUMS = [
   'https://audioxide.com/api/images/album-artwork/in-utero-nirvana-medium-square.jpg',
@@ -21,58 +21,58 @@ const ALBUMS = [
   null,
 ];
 
-const OFFSETS = [-100, -500];
+const OFFSET = -100;
+const SHUFFLED_ALBUMS = shuffle(ALBUMS);
 
 export default function App() {
   const renderBlock = (uri: string | null, i: number) => (
     <ColorBlock key={`child_${i}`} uri={uri} nested={random(1) === 1} />
   );
 
-  const renderScrollView = (offset: number) => (
-    <View key={`${offset}`} style={styles.scrollviewContainer}>
+  return (
+    <View style={styles.scrollviewContainer}>
       <LazyScrollView
         contentContainerStyle={styles.scrollview}
-        offset={offset}
+        offset={OFFSET}
         showsVerticalScrollIndicator={false}
       >
-        {shuffle(ALBUMS).map(renderBlock)}
+        {SHUFFLED_ALBUMS.map(renderBlock)}
       </LazyScrollView>
       <View style={styles.offsetBar}>
-        <Text style={styles.offsetText}>{`Offset ${offset}`}</Text>
+        <Text style={styles.offsetText}>{`Offset: ${OFFSET}`}</Text>
       </View>
     </View>
   );
-
-  return (
-    <ScrollView horizontal pagingEnabled>
-      {OFFSETS.map(renderScrollView)}
-    </ScrollView>
-  );
 }
+
+const PADDING_VERTICAL = 64;
 
 const styles = StyleSheet.create({
   scrollviewContainer: {
-    height: Dimensions.get('screen').height,
-    width: Dimensions.get('screen').width * 0.5,
-    paddingHorizontal: 8,
+    flex: 1,
+    paddingVertical: PADDING_VERTICAL,
+    borderWidth: 1,
   },
   scrollview: {
-    // paddingVertical: 40,
+    paddingHorizontal: 40,
   },
   offsetBar: {
     position: 'absolute',
-    top: 100,
+    bottom: OFFSET * -1 + PADDING_VERTICAL,
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
     left: 0,
     right: 0,
-    backgroundColor: '#000',
     opacity: 0.7,
     height: 50,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   offsetText: {
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
+    backgroundColor: '#000',
+    padding: 8,
   },
 });

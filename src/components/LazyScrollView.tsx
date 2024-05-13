@@ -13,15 +13,15 @@ interface Props
     React.ComponentProps<typeof Animated.ScrollView>,
     'onLayout' | 'onScroll' | 'ref' | 'scrollEventThrottle'
   > {
+  /**
+   * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Defaults to 0 (bottom of ScrollView).
+   */
   offset?: number;
 }
 
 /**
- * @param offset - optional - How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Defaults to 0 (bottom of ScrollView).
- * @param ...rest - optional - All other props are passed to the underlying ScrollView. onLayout, onScroll, ref, and scrollEventThrottle are all handled internally.
- * @returns ScrollView to wrap you components in.  Components wrapped in LazyChild will trigger their onThresholdPass callback when their top position passes the LazyScrollView's offset
+ * ScrollView to wrap Lazy Children in.
  */
-
 export function LazyScrollView({
   children,
   offset: injectedOffset,
@@ -45,8 +45,11 @@ export function LazyScrollView({
 
     return scrollValue.value >= _contentHeight.value - _containerHeight.value;
   });
+  const bottomYValue = useDerivedValue(
+    () => _containerHeight.value + _scrollViewTopY.value
+  );
   const triggerValue = useDerivedValue(
-    () => _containerHeight.value + _offset.value + _scrollViewTopY.value
+    () => bottomYValue.value + _offset.value
   );
 
   const onLayout = useCallback(
@@ -83,6 +86,7 @@ export function LazyScrollView({
           hasReachedEnd,
           triggerValue,
           scrollValue,
+          bottomYValue,
         }}
       >
         <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
