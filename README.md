@@ -11,9 +11,13 @@
 
 ## Motivation
 
-To provide an easy way to trigger logic when a child (or nested child) of a `ScrollView` passes a threshold scroll value.
+To provide an easy way to trigger logic when a child (or nested child) of a `ScrollView` passes a threshold scroll value. This is useful when you have a screen with dynamic content that you don't want to unmount when it scrolls offscreen, but also would like to lazy load. Also provides ability to trigger additional logic when a percentage of your component is visible in the `ScrollView`.
 
 <img alt="demo" src="./__tests__/demo.gif" width=300 height=649/>
+
+#### ⚠️ Limitations
+
+Currently only supports vertical ScrollView.
 
 ## Installation
 
@@ -27,20 +31,17 @@ This library requires reanimated. Follow their [installation instructions](https
 
 ```js
 // MyCoolHomeScreen.tsx
-import { SafeAreaView } from 'react-native';
 import { LazyScrollView } from 'react-native-lazy-scrollview';
 import { CoolComponentA, CoolComponentB, CoolComponentC } from './components';
 
 export function MyCoolHomeScreen() {
   return (
-    <SafeAreaView>
-      // Trigger onThresholdReached when child is 100 pixels above the bottom
-      <LazyScrollView offset={-100} showsVerticalScrollIndicator={false}>
-        <CoolComponentA />
-        <CoolComponentB />
-        <CoolComponentC />
-      </LazyScrollView>
-    </SafeAreaView>
+    // Trigger onThresholdReached when child is 100 pixels above the bottom
+    <LazyScrollView offset={-100} showsVerticalScrollIndicator={false}>
+      <CoolComponentA />
+      <CoolComponentB />
+      <CoolComponentC />
+    </LazyScrollView>
   );
 }
 
@@ -63,12 +64,20 @@ export function CoolComponentC() {
     }
   };
 
-  if (!loading && !data) {
-    return null; // Or maybe some error state if you're feeling fancy
+  const onPercentVisibleThresholdPass = async () => {
+    analyticsCall();
+  };
+
+  if (!data) {
+    return null;
   }
 
   return (
-    <LazyChild onThresholdPass={onThresholdPass}>
+    <LazyChild
+      onThresholdPass={onThresholdPass}
+      onPercentVisibleThresholdPass={onPercentVisibleThresholdPass}
+      percentVisibleThreshold={0.75}
+    >
       {loading ? <SkeletonLoader /> : <ContentView data={data} />}
     </LazyChild>
   );
@@ -86,6 +95,8 @@ export function CoolComponentC() {
 | Prop | Type | Optional | Default | Description |
 | --- | --- | --- | --- | --- |
 | onThresholdPass | `function` | No | - | Callback that will fire when top of `View` passes threshold trigger.
+| percentVisibleThreshold | `number` (Unit Interval) | Yes | - | Percentage of LazyChild that will trigger `onPercentVisibleThresholdPass`.
+| onPercentVisibleThresholdPass | `function` | Yes | - | Callback that will fire when `percentVisibleThreshold` is visible above bottom of LazyScrollView.
 
 ## Example
 
