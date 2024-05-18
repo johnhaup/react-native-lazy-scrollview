@@ -52,6 +52,16 @@ jobs:
           git checkout ${{ github.base_ref }}
           echo "Creating output directory"
           mkdir -p base-tsc-output
+
+          # Install dependencies from Yarn cache if it exists
+          if [ -d ~/.cache/yarn ]; then
+            echo "Using Yarn cache"
+            cp -r ~/.cache/yarn .cache
+          else
+            echo "Yarn cache not found"
+            yarn install
+          fi
+
           echo "Running tsc"
           npx tsc --noEmit --pretty false 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
           echo "Extracting errors"
