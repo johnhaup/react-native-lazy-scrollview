@@ -16,7 +16,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run TypeScript Compiler
-        run: npx tsc --noEmit --pretty false --exclude '/example/**/*' > tsc_output.txt
+        run: npx tsc --noEmit --pretty false --p tsconfig.json > tsc_output.txt
 
       - name: Extract branch name
         run: |
