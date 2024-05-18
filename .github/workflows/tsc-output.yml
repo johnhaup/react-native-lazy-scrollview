@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - main
-      - develop
-      - tsc-action
+
 jobs:
   store-tsc-output:
     runs-on: ubuntu-latest
