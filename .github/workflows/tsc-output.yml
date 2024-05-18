@@ -18,8 +18,13 @@ jobs:
       - name: Run TypeScript Compiler
         run: npx tsc --noEmit --pretty false > tsc_output.txt
 
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Upload TSC Output as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.ref_slug }}-tsc-output
+          name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
           path: tsc_output.txt
