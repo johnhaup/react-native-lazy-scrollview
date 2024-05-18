@@ -5,7 +5,6 @@ on:
   pull_request:
     branches:
       - main
-      - test-action
 
 jobs:
   check-tsc-errors:
@@ -46,9 +45,9 @@ jobs:
           echo "Creating output directory"
           mkdir -p base-tsc-output
           echo "Running tsc"
-          npx tsc --noEmit --pretty false 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
+          npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt || { echo 'tsc command failed'; exit 1; }
           echo "Extracting errors"
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Extract errors from artifact if found
         if: env.artifact-found == 'true'
@@ -63,4 +62,31 @@ jobs:
 
       - name: Run tsc on PR branch
         run: |
-          npx tsc --noEmit --pretty false 2> head-tsc-output.txt || { echo 'tsc c
+          npx tsc --noEmit --pretty false > head-tsc-output.txt || { echo 'tsc command failed'; exit 1; }
+
+      - name: Extract errors from PR branch
+        run: |
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u > head-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+
+      - name: Check PR errors file existence
+        run: |
+          if [ ! -f head-tsc-errors.txt ]; then
+            echo "PR errors file not found!"
+            exit 1
+          fi
+
+      - name: Sort and compare errors
+        run: |
+          sorted_base_errors=$(sort base-tsc-errors.txt)
+          sorted_pr_errors=$(sort head-tsc-errors.txt)
+          echo "$sorted_base_errors" > sorted-base-tsc-errors.txt
+          echo "$sorted_pr_errors" > sorted-head-tsc-errors.txt
+          new_errors=$(comm -13 sorted-base-tsc-errors.txt sorted-head-tsc-errors.txt)
+
+          if [ -n "$new_errors" ]; then
+            echo "New TypeScript errors introduced:"
+            echo "$new_errors"
+            exit 1
+          else
+            echo "No new TypeScript errors introduced."
+          fi
