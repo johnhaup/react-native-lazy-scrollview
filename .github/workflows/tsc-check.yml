@@ -63,7 +63,7 @@ jobs:
           fi
 
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --exclude '/example/**/*' 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
+          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
           echo "Extracting errors"
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run tsc on PR branch
         run: |
-          npx tsc --noEmit --pretty false --exclude '/example/**/*' > head-tsc-output.txt || { echo 'tsc command failed'; exit 1; }
+          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || { echo 'tsc command failed'; exit 1; }
 
       - name: Extract errors from PR branch
         run: |
