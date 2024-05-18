@@ -34,6 +34,7 @@ jobs:
           else
             echo "Artifact not found."
             echo "artifact-found=false" >> $GITHUB_ENV
+          fi
 
       - name: Generate base errors if artifact not found
         if: env.artifact-found == 'false'
@@ -41,7 +42,6 @@ jobs:
           git checkout ${{ github.base_ref }}
           npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
-        shell: bash
 
       - name: Extract errors from artifact if found
         if: env.artifact-found == 'true'
@@ -84,4 +84,3 @@ jobs:
           else
             echo "No new TypeScript errors introduced."
           fi
-        shell: bash
