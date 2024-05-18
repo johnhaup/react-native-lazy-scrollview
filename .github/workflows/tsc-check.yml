@@ -1,0 +1,88 @@
+name: Check for New TypeScript Errors
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - test-action
+
+jobs:
+  check-tsc-errors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Fetch target and PR branches
+        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} ${{ github.head_ref }}:${{ github.head_ref }}
+
+      - name: Download artifact from target branch
+        id: download-artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ github.base_ref_slug }}-tsc-output
+          path: base-tsc-output
+        continue-on-error: true
+
+      - name: Check if artifact exists
+        id: check-artifact
+        run: |
+          if [ -f base-tsc-output/tsc_output.txt ]; then
+            echo "Artifact found."
+            echo "artifact-found=true" >> $GITHUB_ENV
+          else
+            echo "Artifact not found."
+            echo "artifact-found=false" >> $GITHUB_ENV
+
+      - name: Generate base errors if artifact not found
+        if: env.artifact-found == 'false'
+        run: |
+          git checkout ${{ github.base_ref }}
+          npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
+        shell: bash
+
+      - name: Extract errors from artifact if found
+        if: env.artifact-found == 'true'
+        run: |
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
+
+      - name: Checkout PR branch
+        run: git checkout ${{ github.head_ref }}
+
+      - name: Install dependencies for PR branch
+        uses: ./.github/actions/setup
+
+      - name: Run tsc on PR branch
+        run: |
+          npx tsc --noEmit --pretty false > head-tsc-output.txt
+
+      - name: Extract errors from PR branch
+        run: |
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u > head-tsc-errors.txt
+
+      - name: Check PR errors file existence
+        run: |
+          if [ ! -f head-tsc-errors.txt ]; then
+            echo "PR errors file not found!"
+            exit 1
+          fi
+
+      - name: Sort and compare errors
+        run: |
+          sorted_base_errors=$(sort base-tsc-errors.txt)
+          sorted_pr_errors=$(sort head-tsc-errors.txt)
+          echo "$sorted_base_errors" > sorted-base-tsc-errors.txt
+          echo "$sorted_pr_errors" > sorted-head-tsc-errors.txt
+          new_errors=$(comm -13 sorted-base-tsc-errors.txt sorted-head-tsc-errors.txt)
+
+          if [ -n "$new_errors" ]; then
+            echo "New TypeScript errors introduced:"
+            echo "$new_errors"
+            exit 1
+          else
+            echo "No new TypeScript errors introduced."
+          fi
+        shell: bash

@@ -1,0 +1,25 @@
+name: Store TSC Output
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - tsc-action
+jobs:
+  store-tsc-output:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run TypeScript Compiler
+        run: npx tsc --noEmit --pretty false > tsc_output.txt
+
+      - name: Upload TSC Output as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.ref_slug }}-tsc-output
+          path: tsc_output.txt
