@@ -45,6 +45,9 @@ export function LazyChild({
     }
   }, [_hasFiredGlobalTrigger, onThresholdPass]);
 
+  const not: number = '1';
+  console.log(not);
+
   useAnimatedReaction(
     () => {
       if (_hasFiredGlobalTrigger.value) {
