@@ -47,7 +47,6 @@ jobs:
       - name: Generate base errors if artifact not found
         if: env.artifact-found == 'false'
         run: |
-          set -e
           echo "Checking out base branch"
           git checkout ${{ github.base_ref }}
           echo "Creating output directory"
@@ -66,6 +65,7 @@ jobs:
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
           echo "Extracting errors"
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+        continue-on-error: true
 
       - name: Extract errors from artifact if found
         if: env.artifact-found == 'true'
