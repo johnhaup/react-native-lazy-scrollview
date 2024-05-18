@@ -20,7 +20,7 @@ jobs:
 
       - name: Extract target branch name
         run: |
-          branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          branch=${{ github.base_ref }}
           branch=${branch//\//}  # This removes all slashes from the branch name
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
