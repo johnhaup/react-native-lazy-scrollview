@@ -5,6 +5,7 @@ on:
   pull_request:
     branches:
       - main
+      - test-action
 
 jobs:
   check-tsc-errors:
