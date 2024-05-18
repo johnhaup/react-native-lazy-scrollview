@@ -22,7 +22,7 @@ jobs:
         id: download-artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ github.base_ref_slug }}-tsc-output
+          name: ${{ github.base_ref }}-tsc-output
           path: base-tsc-output
         continue-on-error: true
 
