@@ -39,15 +39,20 @@ jobs:
       - name: Generate base errors if artifact not found
         if: env.artifact-found == 'false'
         run: |
+          set -e
+          echo "Checking out base branch"
           git checkout ${{ github.base_ref }}
+          echo "Creating output directory"
           mkdir -p base-tsc-output
-          npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
+          echo "Running tsc"
+          npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt || { echo 'tsc command failed'; exit 1; }
+          echo "Extracting errors"
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Extract errors from artifact if found
         if: env.artifact-found == 'true'
         run: |
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
@@ -57,11 +62,11 @@ jobs:
 
       - name: Run tsc on PR branch
         run: |
-          npx tsc --noEmit --pretty false > head-tsc-output.txt
+          npx tsc --noEmit --pretty false > head-tsc-output.txt || { echo 'tsc command failed'; exit 1; }
 
       - name: Extract errors from PR branch
         run: |
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u > head-tsc-errors.txt
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u > head-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Check PR errors file existence
         run: |
