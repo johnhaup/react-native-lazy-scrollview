@@ -40,6 +40,7 @@ jobs:
         if: env.artifact-found == 'false'
         run: |
           git checkout ${{ github.base_ref }}
+          mkdir -p base-tsc-output
           npx tsc --noEmit --pretty false > base-tsc-output/tsc_output.txt
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt
 
