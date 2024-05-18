@@ -19,8 +19,10 @@ jobs:
         run: npx tsc --noEmit --pretty false > tsc_output.txt
 
       - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          branch=${branch//\//}  # This removes all slashes from the branch name
+          echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
       - name: Upload TSC Output as Artifact
