@@ -21,5 +21,5 @@ jobs:
       - name: Upload TSC Output as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.ref }}-tsc-output
+          name: ${{ github.ref_slug }}-tsc-output
           path: tsc_output.txt
