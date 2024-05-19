@@ -62,7 +62,7 @@ jobs:
 
       - name: Run tsc on PR branch
         run: |
-          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || { echo 'tsc command failed'; exit 1; }
+          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || true
 
       - name: Extract errors from PR branch
         run: |
