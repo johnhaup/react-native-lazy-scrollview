@@ -25,39 +25,33 @@ jobs:
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Download TSC Output from Cache
-        uses: actions/cache@v2
-        id: download-cache
-        with:
-          path: tsc_output.txt
-          key: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-
-      - name: Check if cache exists
-        id: cache-check
-        run: |
-          if [ -f tsc_output.txt ]; then
-            echo "Cache found."
-            cp tsc_output.txt base-tsc-errors.txt
-            echo "cache-found=true" >> $GITHUB_ENV
-          else
-            echo "Cache not found."
-            echo "cache-found=false" >> $GITHUB_ENV
-          fi
-
       - name: Checkout base branch
-        if: env.cache-found == 'false'
         run: git checkout ${{ github.base_ref }}
 
+      - name: Check for tsc_output.txt in base branch
+        id: check_tsc_output
+        run: |
+          if git show ${GITHUB_SHA}:${{ steps.extract_branch.outputs.branch }}/tsc_output.txt >/dev/null 2>&1; then
+            echo "tsc_output.txt found in base branch"
+            cp tsc_output.txt base-tsc-errors.txt
+            echo "tsc_output_exists=true" >> $GITHUB_ENV
+          else
+            echo "tsc_output.txt not found in base branch"
+            echo "tsc_output_exists=false" >> $GITHUB_ENV
+          fi
+
       - name: Install dependencies for base branch
-        if: env.cache-found == 'false'
+        if: env.tsc_output_exists == 'false'
         uses: ./.github/actions/setup
 
       - name: Generate base branch tsc errors
-        if: env.cache-found == 'false'
+        if: env.tsc_output_exists == 'false'
         run: |
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-errors.txt || true
-          echo "Extracting errors"
+
+      - name: Extract errors from base branch
+        run: |
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Checkout PR branch
@@ -81,11 +75,11 @@ jobs:
             exit 1
           fi
 
-      - name: Compare errors with cached output
+      - name: Compare base errors with PR errors
         run: |
-          cached_errors=$(cat base-tsc-errors.txt | sort -u)
+          base_errors=$(cat base-tsc-errors.txt | sort -u)
           pr_errors=$(cat head-tsc-errors.txt | sort -u)
-          new_errors=$(comm -13 <(echo "$cached_errors") <(echo "$pr_errors"))
+          new_errors=$(comm -13 <(echo "$base_errors") <(echo "$pr_errors"))
 
           if [ -n "$new_errors" ]; then
             echo "New TypeScript errors introduced:"
