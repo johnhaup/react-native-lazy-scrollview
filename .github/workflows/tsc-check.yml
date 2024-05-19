@@ -35,7 +35,7 @@ jobs:
           if [ -f tsc_output.txt ]; then
             echo "Cache found."
             cp tsc_output.txt base-tsc-errors.txt
-            echo "cache-found=false" >> $GITHUB_ENV
+            echo "cache-found=true" >> $GITHUB_ENV
           else
             echo "Cache not found."
             echo "cache-found=false" >> $GITHUB_ENV
