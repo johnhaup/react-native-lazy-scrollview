@@ -80,7 +80,11 @@ jobs:
           fi
 
       - name: Print head-tsc-errors.txt for debugging
-        run: cat head-tsc-errors.txt
+        run: |
+          cat head-tsc-output.txt
+          cat head-tsc-errors.txt
+          cat base-tsc-output.txt
+          cat base-tsc-errors.txt
 
       - name: Compare base errors with PR errors
         run: |
