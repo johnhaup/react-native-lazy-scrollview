@@ -16,7 +16,9 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run TypeScript Compiler
-        run: npx tsc --noEmit --pretty false --p tsconfig.json > tsc_output.txt
+        run: |
+          echo "Running tsc"
+          npx tsc --noEmit --pretty false --p tsconfig.json > tsc_output.txt || true
 
       - name: Extract branch name
         run: |
@@ -25,8 +27,8 @@ jobs:
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Upload TSC Output as Artifact
-        uses: actions/upload-artifact@v2
+      - name: Cache TSC Output
+        uses: actions/cache@v2
         with:
-          name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
           path: tsc_output.txt
+          key: ${{ steps.extract_branch.outputs.branch }}-tsc-output

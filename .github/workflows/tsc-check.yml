@@ -15,9 +15,6 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Fetch target and PR branches
-        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} ${{ github.head_ref }}:${{ github.head_ref }}
-
       - name: Extract target branch name
         run: |
           branch=${{ github.base_ref }}
@@ -25,52 +22,40 @@ jobs:
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Download artifact from target branch
-        id: download-artifact
-        uses: actions/download-artifact@v2
+      - name: Download TSC Output from Cache
+        uses: actions/cache@v2
+        id: download-cache
         with:
-          name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-          path: base-tsc-output
-        continue-on-error: true
+          path: tsc_output.txt
+          key: ${{ steps.extract_branch.outputs.branch }}-tsc-output
 
-      - name: Check if artifact exists
-        id: check-artifact
+      - name: Check if cache exists
+        id: cache-check
         run: |
-          if [ -f base-tsc-output/tsc_output.txt ]; then
-            echo "Artifact found."
-            echo "artifact-found=true" >> $GITHUB_ENV
+          if [ -f tsc_output.txt ]; then
+            echo "Cache found."
+            cp tsc_output.txt base-tsc-errors.txt
+            echo "cache-found=true" >> $GITHUB_ENV
           else
-            echo "Artifact not found."
-            echo "artifact-found=false" >> $GITHUB_ENV
+            echo "Cache not found."
+            echo "cache-found=false" >> $GITHUB_ENV
           fi
 
-      - name: Generate base errors if artifact not found
-        if: env.artifact-found == 'false'
+      - name: Checkout base branch
+        if: env.cache-found == 'false'
+        run: git checkout ${{ github.base_ref }}
+
+      - name: Install dependencies for base branch
+        if: env.cache-found == 'false'
+        uses: ./.github/actions/setup
+
+      - name: Generate base branch tsc errors
+        if: env.cache-found == 'false'
         run: |
-          echo "Checking out base branch"
-          git checkout ${{ github.base_ref }}
-          echo "Creating output directory"
-          mkdir -p base-tsc-output
-
-          # Install dependencies from Yarn cache if it exists
-          if [ -d ~/.cache/yarn ]; then
-            echo "Using Yarn cache"
-            cp -r ~/.cache/yarn .cache
-          else
-            echo "Yarn cache not found"
-            yarn install
-          fi
-
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output/tsc_errors.txt || { echo 'tsc command failed'; cat base-tsc-output/tsc_errors.txt; exit 1; }
+          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-errors.txt || { echo 'tsc command failed'; cat base-tsc-errors.txt; exit 1; }
           echo "Extracting errors"
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
-        continue-on-error: true
-
-      - name: Extract errors from artifact if found
-        if: env.artifact-found == 'true'
-        run: |
-          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output/tsc_output.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
@@ -93,13 +78,11 @@ jobs:
             exit 1
           fi
 
-      - name: Sort and compare errors
+      - name: Compare errors with cached output
         run: |
-          sorted_base_errors=$(sort base-tsc-errors.txt)
-          sorted_pr_errors=$(sort head-tsc-errors.txt)
-          echo "$sorted_base_errors" > sorted-base-tsc-errors.txt
-          echo "$sorted_pr_errors" > sorted-head-tsc-errors.txt
-          new_errors=$(comm -13 sorted-base-tsc-errors.txt sorted-head-tsc-errors.txt)
+          cached_errors=$(cat base-tsc-errors.txt | sort -u)
+          pr_errors=$(cat head-tsc-errors.txt | sort -u)
+          new_errors=$(comm -13 <(echo "$cached_errors") <(echo "$pr_errors"))
 
           if [ -n "$new_errors" ]; then
             echo "New TypeScript errors introduced:"
