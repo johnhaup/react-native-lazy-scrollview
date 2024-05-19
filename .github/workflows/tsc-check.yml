@@ -30,9 +30,7 @@ jobs:
         with:
           name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
           path: ${{ steps.extract_branch.outputs.branch }}-tsc-output.txt
-
-      - name: Checkout base branch
-        run: git checkout ${{ github.base_ref }}
+        continue-on-error: true
 
       - name: Check if base artifact exists
         id: check_tsc_output
@@ -44,7 +42,6 @@ jobs:
             echo "base branch artifact not found"
             echo "tsc_output_exists=false" >> $GITHUB_ENV
           fi
-        continue-on-error: true
 
       - name: Checkout base branch
         if: env.tsc_output_exists == 'false'
@@ -90,11 +87,7 @@ jobs:
 
       - name: Compare base errors with PR errors
         run: |
-          cat head-tsc-output.txt
-          cat base-tsc-output.txt
-
           diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
-          echo "$diff_output"
 
           if [ -n "$diff_output" ]; then
             echo "New TypeScript errors introduced:"
