@@ -62,12 +62,12 @@ jobs:
 
       - name: Check both tsc outputs exist
         run: |
-          if [ ! -f base-tsc-errors.txt ]; then
-            echo "Base errors file not found!"
+          if [ ! -f base-tsc-output.txt ]; then
+            echo "Base output file not found!"
             exit 1
           fi
-          if [ ! -f head-tsc-errors.txt ]; then
-            echo "PR errors file not found!"
+          if [ ! -f head-tsc-output.txt ]; then
+            echo "PR output file not found!"
             exit 1
           fi
 
