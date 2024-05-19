@@ -79,6 +79,13 @@ jobs:
         run: |
           base_errors=$(cat base-tsc-errors.txt | sort -u)
           pr_errors=$(cat head-tsc-errors.txt | sort -u)
+
+          echo "Base branch TypeScript errors:"
+          echo "$base_errors"
+
+          echo "PR branch TypeScript errors:"
+          echo "$pr_errors"
+
           new_errors=$(comm -13 <(echo "$base_errors") <(echo "$pr_errors"))
 
           if [ -n "$new_errors" ]; then
