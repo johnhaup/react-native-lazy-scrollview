@@ -79,9 +79,9 @@ jobs:
           diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
           echo "$diff_output"
 
-          if [ -n "$new_errors" ]; then
+          if [ -n "$diff_output" ]; then
             echo "New TypeScript errors introduced:"
-            echo "$new_errors"
+            echo "$diff_output"
             exit 1
           else
             echo "No new TypeScript errors introduced."
