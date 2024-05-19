@@ -50,6 +50,10 @@ jobs:
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
 
+      - name: Extract errors from base branch
+        run: |
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
 
@@ -60,32 +64,33 @@ jobs:
         run: |
           npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || true
 
+      - name: Extract errors from PR branch
+        run: |
+          grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u > head-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
+
       - name: Check both tsc outputs exist
         run: |
-          if [ ! -f base-tsc-output.txt ]; then
+          if [ ! -f base-tsc-errors.txt ]; then
             echo "Base errors file not found!"
             exit 1
           fi
-          if [ ! -f head-tsc-output.txt ]; then
+          if [ ! -f head-tsc-errors.txt ]; then
             echo "PR errors file not found!"
             exit 1
           fi
 
-      - name: Print head-tsc-output.txt for debugging
-        run: cat head-tsc-output.txt
+      - name: Print head-tsc-errors.txt for debugging
+        run: cat head-tsc-errors.txt
 
       - name: Compare base errors with PR errors
         run: |
-          base_errors=$(grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-output.txt | sort -u)
-          pr_errors=$(grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' head-tsc-output.txt | sort -u)
-
           echo "Base branch TypeScript errors:"
-          echo "$base_errors"
+          cat base-tsc-errors.txt
 
           echo "PR branch TypeScript errors:"
-          echo "$pr_errors"
+          cat head-tsc-errors.txt
 
-          new_errors=$(comm -13 <(echo "$base_errors") <(echo "$pr_errors"))
+          new_errors=$(comm -13 base-tsc-errors.txt head-tsc-errors.txt)
 
           if [ -n "$new_errors" ]; then
             echo "New TypeScript errors introduced:"
