@@ -96,6 +96,9 @@ export function LazyChild({
   const newError: number = '1';
   console.log(newError);
 
+  const newError: number = '1';
+  console.log(newError);
+
   useAnimatedReaction(
     () => {
       if (!_shouldMeasurePercentVisible) {
