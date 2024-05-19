@@ -44,6 +44,7 @@ jobs:
             echo "base branch artifact not found"
             echo "tsc_output_exists=false" >> $GITHUB_ENV
           fi
+        continue-on-error: true
 
       - name: Checkout base branch
         if: env.tsc_output_exists == 'false'
