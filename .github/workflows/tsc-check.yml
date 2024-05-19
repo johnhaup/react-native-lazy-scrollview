@@ -44,11 +44,11 @@ jobs:
         if: env.tsc_output_exists == 'false'
         uses: ./.github/actions/setup
 
-      - name: Generate base branch tsc errors
+      - name: Generate base branch tsc output
         if: env.tsc_output_exists == 'false'
         run: |
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-errors.txt || true
+          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
 
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
@@ -60,9 +60,13 @@ jobs:
         run: |
           npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || true
 
-      - name: Check PR errors file existence
+      - name: Check both tsc outputs exist
         run: |
-          if [ ! -f head-tsc-errors.txt ]; then
+          if [ ! -f base-tsc-output.txt ]; then
+            echo "Base errors file not found!"
+            exit 1
+          fi
+          if [ ! -f head-tsc-output.txt ]; then
             echo "PR errors file not found!"
             exit 1
           fi
