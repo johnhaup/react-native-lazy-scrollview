@@ -71,18 +71,11 @@ jobs:
             exit 1
           fi
 
-      - name: Print head-tsc-output.txt for debugging
-        run: |
-          cat head-tsc-output.txt
-          cat head-tsc-output.txt 2>&1
-
-      - name: Print base-tsc-output.txt for debugging
-        run: |
-          cat base-tsc-output.txt
-          cat base-tsc-output.txt 2>&1
-
       - name: Compare base errors with PR errors
         run: |
+          cat head-tsc-output.txt
+          cat base-tsc-output.txt
+
           diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
           echo "$diff_output"
 
