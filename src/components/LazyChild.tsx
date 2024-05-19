@@ -93,6 +93,9 @@ export function LazyChild({
     }
   }, [_hasFiredPercentVisibleTrigger, onPercentVisibleThresholdPass]);
 
+  const newError: number = '1';
+  console.log(newError);
+
   useAnimatedReaction(
     () => {
       if (!_shouldMeasurePercentVisible) {
