@@ -79,11 +79,20 @@ jobs:
             exit 1
           fi
 
-      - name: Print head-tsc-errors.txt for debugging
+      - name: Print head-tsc-output.txt for debugging
         run: |
           cat head-tsc-output.txt
+
+      - name: Print head-tsc-errors.txt for debugging
+        run: |
           cat head-tsc-errors.txt
+
+      - name: Print base-tsc-output.txt for debugging
+        run: |
           cat base-tsc-output.txt
+
+      - name: Print base-tsc-errors.txt for debugging
+        run: |
           cat base-tsc-errors.txt
 
       - name: Compare base errors with PR errors
