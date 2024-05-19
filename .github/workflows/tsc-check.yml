@@ -56,7 +56,7 @@ jobs:
         if: env.cache-found == 'false'
         run: |
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-errors.txt || { echo 'tsc command failed'; cat base-tsc-errors.txt; exit 1; }
+          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-errors.txt || true
           echo "Extracting errors"
           grep -oE '^[^ ]+.ts:[0-9]+:[0-9]+' base-tsc-errors.txt | sort -u > base-tsc-errors.txt || { echo 'grep command failed'; exit 1; }
 
