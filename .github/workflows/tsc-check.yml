@@ -74,10 +74,12 @@ jobs:
       - name: Print head-tsc-output.txt for debugging
         run: |
           cat head-tsc-output.txt
+          cat head-tsc-output.txt 2>&1
 
       - name: Print base-tsc-output.txt for debugging
         run: |
           cat base-tsc-output.txt
+          cat base-tsc-output.txt 2>&1
 
       - name: Compare base errors with PR errors
         run: |
