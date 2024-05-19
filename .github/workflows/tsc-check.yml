@@ -18,25 +18,26 @@ jobs:
       - name: Fetch branches
         run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} ${{ github.head_ref }}:${{ github.head_ref }}
 
-      - name: Extract target branch name
+      - name: Extract base branch name
         run: |
           branch=${{ github.base_ref }}
           branch=${branch//\//}  # This removes all slashes from the branch name
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Download base tsc output artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-          path: ${{ steps.extract_branch.outputs.branch }}-tsc-output.txt
-        continue-on-error: true
+      # - name: Download base tsc output artifact
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
+      #     path: artifact-tsc-output.txt
+      #   continue-on-error: true
 
       - name: Check if base artifact exists
         id: check_tsc_output
         run: |
-          if [ -d ${{ steps.extract_branch.outputs.branch }}-tsc-output.txt ]; then
+          if [ -d artifact-tsc-output.txt ]; then
             echo "base branch artifact found"
+            cp artifact-tsc-output.txt base-tsc-output.txt
             echo "tsc_output_exists=true" >> $GITHUB_ENV
           else
             echo "base branch artifact not found"
@@ -44,25 +45,25 @@ jobs:
           fi
 
       - name: Checkout base branch
-        if: env.tsc_output_exists == 'false'
+        # if: env.tsc_output_exists == 'false'
         run: git checkout ${{ github.base_ref }}
 
       - name: Install dependencies for base branch
-        if: env.tsc_output_exists == 'false'
+        # if: env.tsc_output_exists == 'false'
         uses: ./.github/actions/setup
 
       - name: Generate base branch tsc output
-        if: env.tsc_output_exists == 'false'
+        # if: env.tsc_output_exists == 'false'
         run: |
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
 
-      - name: Upload base tsc output as artifact
-        if: env.tsc_output_exists == 'false'
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-          path: ${{ steps.extract_branch.outputs.branch }}-tsc-output.txt
+      # - name: Upload base tsc output as artifact
+      #   if: env.tsc_output_exists == 'false'
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
+      #     path: base-tsc-output.txt
 
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
