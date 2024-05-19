@@ -16,7 +16,14 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run TypeScript Compiler
-        run: npx tsc --noEmit --pretty false --p tsconfig.json > tsc_output.txt
+        run: |
+          echo "Running tsc"
+          npx tsc --noEmit --pretty false --p tsconfig.json > tsc_output.txt 2> tsc_errors.log || true
+
+          echo "TSC Output:"
+          cat tsc_output.txt
+          echo "TSC Errors:"
+          cat tsc_errors.log
 
       - name: Extract branch name
         run: |
