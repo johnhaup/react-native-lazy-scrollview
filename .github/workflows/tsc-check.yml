@@ -74,6 +74,12 @@ jobs:
 
       - name: Compare base errors with PR errors
         run: |
+          echo "base"
+          cat base-tsc-output.txt
+
+          echo "head"
+          cat head-tsc-output.txt
+
           diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
 
           if [ -n "$diff_output" ]; then
