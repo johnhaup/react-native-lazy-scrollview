@@ -34,7 +34,7 @@ jobs:
       - name: Generate base branch tsc output
         run: |
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
+          npx tsc --noEmit --pretty false --p tsconfig.json > base-tsc-output.txt || true
           cat base-tsc-output.txt
 
       - name: Save base tsc output to temp directory
