@@ -1,0 +1,74 @@
+name: Check for New TypeScript Errors
+
+jobs:
+  check-tsc-errors:
+    runs-on: ubuntu-latest
+
+    inputs:
+      install-command:
+        description: 'Command to install dependencies'
+        required: false
+        default: 'yarn install'
+
+    steps:
+      - name: Fetch branches
+        run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} ${{ github.head_ref }}:${{ github.head_ref }}
+
+      - name: Extract base branch name
+        run: |
+          branch=${{ github.base_ref }}
+          branch=${branch//\//}  # This removes all slashes from the branch name
+          echo "branch=${branch}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Checkout base branch
+        run: git checkout ${{ github.base_ref }}
+
+      - name: Install dependencies for base branch
+        uses: ${{ inputs.install-command }}
+
+      - name: Generate base branch tsc output
+        run: |
+          echo "Running tsc"
+          npx tsc --noEmit --pretty false --p tsconfig.json > base-tsc-output.txt 2> /dev/null || true
+
+      - name: Save base tsc output to temp directory
+        run: |
+          mkdir -p temp
+          mv base-tsc-output.txt temp/base-tsc-output.txt
+
+      - name: Checkout PR branch
+        run: git checkout ${{ github.head_ref }}
+
+      - name: Restore base tsc output from temp directory
+        run: mv temp/base-tsc-output.txt base-tsc-output.txt
+
+      - name: Install dependencies for PR branch
+        uses: ${{ inputs.install-command }}
+
+      - name: Run tsc on PR branch
+        run: |
+          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt 2> /dev/null || true
+
+      - name: Check both tsc outputs exist
+        run: |
+          if [ ! -f base-tsc-output.txt ]; then
+            echo "Base output file not found!"
+            exit 1
+          fi
+          if [ ! -f head-tsc-output.txt ]; then
+            echo "PR output file not found!"
+            exit 1
+          fi
+
+      - name: Compare base errors with PR errors
+        run: |
+          diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
+
+          if [ -n "$diff_output" ]; then
+            echo "New TypeScript errors introduced:"
+            echo "$diff_output"
+            exit 1
+          else
+            echo "No new TypeScript errors introduced."
+          fi
