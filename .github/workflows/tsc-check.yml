@@ -45,6 +45,9 @@ jobs:
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
 
+      - name: Print contents of temp directory
+        run: ls -al temp
+
       - name: Restore base tsc output from temp directory
         run: mv temp/base-tsc-output.txt base-tsc-output.txt
 
