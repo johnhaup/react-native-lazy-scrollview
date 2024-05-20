@@ -34,7 +34,7 @@ jobs:
       - name: Generate base branch tsc output
         run: |
           echo "Running tsc"
-          npx tsc --noEmit --pretty false --p tsconfig.json > base-tsc-output.txt || true
+          npx tsc --noEmit --pretty false --p tsconfig.json > base-tsc-output.txt 2> /dev/null || true
           cat base-tsc-output.txt
 
       - name: Save base tsc output to temp directory
@@ -59,7 +59,7 @@ jobs:
 
       - name: Run tsc on PR branch
         run: |
-          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt || true
+          npx tsc --noEmit --pretty false --p tsconfig.json > head-tsc-output.txt 2> /dev/null || true
 
       - name: Check both tsc outputs exist
         run: |
@@ -74,12 +74,6 @@ jobs:
 
       - name: Compare base errors with PR errors
         run: |
-          echo "base"
-          cat base-tsc-output.txt
-
-          echo "head"
-          cat head-tsc-output.txt
-
           diff_output=$(diff -u base-tsc-output.txt head-tsc-output.txt | grep -E '^\+' | grep -vE '^\+\+\+|^---')
 
           if [ -n "$diff_output" ]; then
