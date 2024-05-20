@@ -35,7 +35,6 @@ jobs:
         run: |
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json > base-tsc-output.txt 2> /dev/null || true
-          cat base-tsc-output.txt
 
       - name: Save base tsc output to temp directory
         run: |
