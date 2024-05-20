@@ -18,4 +18,4 @@ jobs:
       - name: Check for new typescript errors
         uses: ./.github/actions/tsc-check
         with:
-          install-command: './.github/actions/setup'
+          install-command: './setup'
