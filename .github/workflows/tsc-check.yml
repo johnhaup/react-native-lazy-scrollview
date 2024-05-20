@@ -25,49 +25,27 @@ jobs:
           echo "branch=${branch}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      # - name: Download base tsc output artifact
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-      #     path: artifact-tsc-output.txt
-      #   continue-on-error: true
-
-      # - name: Check if base artifact exists
-      #   id: check_tsc_output
-      #   run: |
-      #     if [ -d artifact-tsc-output.txt ]; then
-      #       echo "base branch artifact found"
-      #       cp artifact-tsc-output.txt base-tsc-output.txt
-      #       echo "tsc_output_exists=true" >> $GITHUB_ENV
-      #     else
-      #       echo "base branch artifact not found"
-      #       echo "tsc_output_exists=false" >> $GITHUB_ENV
-      #     fi
-
       - name: Checkout base branch
-        # if: env.tsc_output_exists == 'false'
         run: git checkout ${{ github.base_ref }}
 
       - name: Install dependencies for base branch
-        # if: env.tsc_output_exists == 'false'
         uses: ./.github/actions/setup
 
       - name: Generate base branch tsc output
-        # if: env.tsc_output_exists == 'false'
         run: |
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
-          cat base-tsc-output.txt
 
-      # - name: Upload base tsc output as artifact
-      #   if: env.tsc_output_exists == 'false'
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: ${{ steps.extract_branch.outputs.branch }}-tsc-output
-      #     path: base-tsc-output.txt
+      - name: Save base tsc output to temp directory
+        run: |
+          mkdir -p temp
+          mv base-tsc-output.txt temp/base-tsc-output.txt
 
       - name: Checkout PR branch
         run: git checkout ${{ github.head_ref }}
+
+      - name: Restore base tsc output from temp directory
+        run: mv temp/base-tsc-output.txt base-tsc-output.txt
 
       - name: Install dependencies for PR branch
         uses: ./.github/actions/setup
