@@ -10,9 +10,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v3
-
     - name: Fetch branches
       run: git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} ${{ github.head_ref }}:${{ github.head_ref }}
       shell: bash
@@ -30,7 +27,8 @@ runs:
       shell: bash
 
     - name: Install dependencies for base branch
-      uses: ${{ inputs.install-command }}
+      run: ${{ inputs.install-command }}
+      shell: bash
 
     - name: Generate base branch tsc output
       run: |
@@ -53,7 +51,8 @@ runs:
       shell: bash
 
     - name: Install dependencies for PR branch
-      uses: ${{ inputs.install-command }}
+      run: ${{ inputs.install-command }}
+      shell: bash
 
     - name: Run tsc on PR branch
       run: |
