@@ -35,6 +35,7 @@ jobs:
         run: |
           echo "Running tsc"
           npx tsc --noEmit --pretty false --p tsconfig.json 2> base-tsc-output.txt || true
+          cat base-tsc-output.txt
 
       - name: Save base tsc output to temp directory
         run: |
@@ -46,6 +47,9 @@ jobs:
 
       - name: Restore base tsc output from temp directory
         run: mv temp/base-tsc-output.txt base-tsc-output.txt
+
+      - name: Print base tsc output
+        run: cat base-tsc-output.txt
 
       - name: Install dependencies for PR branch
         uses: ./.github/actions/setup
