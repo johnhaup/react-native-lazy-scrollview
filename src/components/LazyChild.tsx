@@ -4,9 +4,11 @@ import Animated, {
   runOnJS,
   useAnimatedReaction,
   useAnimatedRef,
+  useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAnimatedContext } from '../context/AnimatedContext';
+import { Platform } from 'react-native';
 
 interface Props {
   children: React.ReactNode;
@@ -22,6 +24,10 @@ interface Props {
    * Callback to fire when the LazyChild's viewable area exceeds the percentVisibleThreshold.
    */
   onPercentVisibleThresholdPass?: () => void;
+  /**
+   * Protects against firing callback on measurement with zero value.  Default is true.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
+   */
+  ignoreZeroMeasurement?: boolean;
 }
 
 /**
@@ -32,12 +38,14 @@ export function LazyChild({
   onThresholdPass,
   percentVisibleThreshold = 1,
   onPercentVisibleThresholdPass,
+  ignoreZeroMeasurement = true,
 }: Props) {
   const { triggerValue, hasReachedEnd, scrollValue, bottomYValue } =
     useAnimatedContext();
 
   const _viewRef = useAnimatedRef<Animated.View>();
   const _hasFiredScrollViewThresholdTrigger = useSharedValue(false);
+  const _ignoreZeroMeasurement = useSharedValue(ignoreZeroMeasurement);
   const _isAndroid = useSharedValue(Platform.OS === 'android');
   const _canMeasure = useDerivedValue(
     // https://github.com/software-mansion/react-native-reanimated/issues/5006#issuecomment-1826495797
@@ -70,6 +78,10 @@ export function LazyChild({
 
       // Track scollValue to make reaction fire
       if (measurement !== null && scrollValue.value > -1) {
+        if (_ignoreZeroMeasurement.value && measurement.pageY === 0) {
+          return false;
+        }
+
         return (
           measurement.pageY < triggerValue.value &&
           !_hasFiredScrollViewThresholdTrigger.value
@@ -123,6 +135,10 @@ export function LazyChild({
 
       // Track scollValue to make reaction fire
       if (measurement !== null && scrollValue.value > -1) {
+        if (_ignoreZeroMeasurement.value && measurement.pageY === 0) {
+          return false;
+        }
+
         const percentOffset = measurement.height * _percentVisibleTrigger.value;
         const percentTrigger = bottomYValue.value - percentOffset;
 

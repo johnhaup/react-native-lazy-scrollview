@@ -64,11 +64,13 @@ export function CoolComponentC() {
     }
   };
 
+  // Fired when LazyChild has 75% visibility
   const onPercentVisibleThresholdPass = async () => {
     analyticsCall();
   };
 
   if (!data) {
+    // Trigger has fired and no data :(
     return null;
   }
 
@@ -89,14 +91,15 @@ export function CoolComponentC() {
 **LazyScrollView**
 | Prop | Type | Optional | Default | Description |
 | --- | --- | --- | --- | --- |
-| offset | `number` | Yes | 0 (bottom of ScrollView) | How far above or below the bottom of the `ScrollView` the threshold trigger is. Negative is above, positive it below.
+| `offset` | `number` | Yes | 0 (bottom of `LazyScrollView`) | How far above or below the bottom of the `LazyScrollView` the threshold trigger is. Negative is above, positive it below.
 
 **LazyChild**
 | Prop | Type | Optional | Default | Description |
 | --- | --- | --- | --- | --- |
-| onThresholdPass | `function` | No | - | Callback that will fire when top of `View` passes threshold trigger.
-| percentVisibleThreshold | `number` (Unit Interval) | Yes | - | Percentage of LazyChild that will trigger `onPercentVisibleThresholdPass`.
-| onPercentVisibleThresholdPass | `function` | Yes | - | Callback that will fire when `percentVisibleThreshold` is visible above bottom of LazyScrollView.
+| `onThresholdPass` | `function` | **No** | - | Callback that will fire when top of `View` passes threshold trigger.
+| `percentVisibleThreshold` | `number` (Unit Interval) | Yes | 1 | Percentage of LazyChild that will trigger `onPercentVisibleThresholdPass`.
+| `onPercentVisibleThresholdPass` | `function` | Yes | - | Callback that will fire when `percentVisibleThreshold` is visible above bottom of LazyScrollView. Note that this trigger is tied to the bottom of the LazyScrollView, not the threshold.
+| `ignoreZeroMeasurement` | `boolean` | Yes | `true` | Protects against firing callback on measurement with zero value. Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
 
 ## Example
 
