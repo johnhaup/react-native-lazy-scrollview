@@ -30,24 +30,31 @@ interface Props {
 export function LazyChild({
   children,
   onThresholdPass,
-  percentVisibleThreshold,
+  percentVisibleThreshold = 1,
   onPercentVisibleThresholdPass,
 }: Props) {
   const { triggerValue, hasReachedEnd, scrollValue, bottomYValue } =
     useAnimatedContext();
-  const _viewRef = useAnimatedRef<Animated.View>();
-  const _hasFiredGlobalTrigger = useSharedValue(false);
 
-  const handleGlobalTrigger = useCallback(() => {
-    if (!_hasFiredGlobalTrigger.value) {
-      _hasFiredGlobalTrigger.value = true;
+  const _viewRef = useAnimatedRef<Animated.View>();
+  const _hasFiredScrollViewThresholdTrigger = useSharedValue(false);
+  const _isAndroid = useSharedValue(Platform.OS === 'android');
+  const _canMeasure = useDerivedValue(
+    // https://github.com/software-mansion/react-native-reanimated/issues/5006#issuecomment-1826495797
+    // Running same check on iOS sometimes causes the view to not be measured
+    () => !_isAndroid.value || (_viewRef.current && _isAndroid.value)
+  );
+
+  const handleScrollViewThresholdPass = useCallback(() => {
+    if (!_hasFiredScrollViewThresholdTrigger.value) {
+      _hasFiredScrollViewThresholdTrigger.value = true;
       onThresholdPass();
     }
-  }, [_hasFiredGlobalTrigger, onThresholdPass]);
+  }, [_hasFiredScrollViewThresholdTrigger, onThresholdPass]);
 
   useAnimatedReaction(
     () => {
-      if (_hasFiredGlobalTrigger.value) {
+      if (_hasFiredScrollViewThresholdTrigger.value) {
         return false;
       }
 
@@ -55,21 +62,25 @@ export function LazyChild({
         return true;
       }
 
+      if (!_canMeasure) {
+        return false;
+      }
+
       const measurement = measure(_viewRef);
 
-      // scrollValue only here to make the reaction fire
+      // Track scollValue to make reaction fire
       if (measurement !== null && scrollValue.value > -1) {
         return (
           measurement.pageY < triggerValue.value &&
-          !_hasFiredGlobalTrigger.value
+          !_hasFiredScrollViewThresholdTrigger.value
         );
       }
 
       return false;
     },
-    (hasPassedThreshold) => {
-      if (hasPassedThreshold) {
-        runOnJS(handleGlobalTrigger)();
+    (shouldFireScrollViewTrigger) => {
+      if (shouldFireScrollViewTrigger) {
+        runOnJS(handleScrollViewThresholdPass)();
       }
     }
   );
@@ -77,7 +88,7 @@ export function LazyChild({
   const _shouldMeasurePercentVisible = useSharedValue(
     typeof onPercentVisibleThresholdPass === 'function'
   );
-  const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold || 1);
+  const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredPercentVisibleTrigger = useSharedValue(false);
 
   const handlePercentTrigger = useCallback(() => {
@@ -104,9 +115,13 @@ export function LazyChild({
         return true;
       }
 
+      if (!_canMeasure) {
+        return false;
+      }
+
       const measurement = measure(_viewRef);
 
-      // scrollValue only here to make the reaction fire
+      // Track scollValue to make reaction fire
       if (measurement !== null && scrollValue.value > -1) {
         const percentOffset = measurement.height * _percentVisibleTrigger.value;
         const percentTrigger = bottomYValue.value - percentOffset;
@@ -123,8 +138,8 @@ export function LazyChild({
 
       return false;
     },
-    (hasPassedThreshold) => {
-      if (hasPassedThreshold) {
+    (shouldFirePercentTrigger) => {
+      if (shouldFirePercentTrigger) {
         runOnJS(handlePercentTrigger)();
       }
     }
