@@ -50,7 +50,8 @@ export function LazyChild({
   const _canMeasure = useDerivedValue(
     // https://github.com/software-mansion/react-native-reanimated/issues/5006#issuecomment-1826495797
     // Running same check on iOS sometimes causes the view to not be measured
-    () => !_isAndroid.value || (_viewRef.current && _isAndroid.value)
+    () => !_isAndroid.value || (_viewRef.current && _isAndroid.value),
+    []
   );
 
   const handleScrollViewThresholdPass = useCallback(() => {
