@@ -1,6 +1,13 @@
 import sample from 'lodash/sample';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  ImageSourcePropType,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 
 const NO_LAZY_CHILD_BACKGROUNDS = [
@@ -16,10 +23,10 @@ const PERCENT_STRING = `${PERCENT * 100}%`;
 const PERCENT_TEXT = `${PERCENT_STRING} threshold passed`;
 
 export function ColorBlock({
-  uri,
+  source,
   nested,
 }: {
-  uri: string | null;
+  source: ImageSourcePropType | null;
   nested?: boolean;
 }) {
   const [triggered, setTriggered] = useState(false);
@@ -37,7 +44,7 @@ export function ColorBlock({
 
   const backgroundColor = useMemo(() => sample(NO_LAZY_CHILD_BACKGROUNDS), []);
 
-  if (!uri) {
+  if (!source) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
         <Text style={styles.text}>
@@ -60,7 +67,7 @@ export function ColorBlock({
         >
           <View style={styles.container}>
             {triggered ? (
-              <Image source={{ uri }} style={styles.image} />
+              <Image source={source} style={styles.image} />
             ) : (
               <ActivityIndicator />
             )}
@@ -82,7 +89,7 @@ export function ColorBlock({
     >
       <View style={styles.container}>
         {triggered ? (
-          <Image source={{ uri }} style={styles.image} />
+          <Image source={source} style={styles.image} />
         ) : (
           <ActivityIndicator />
         )}
