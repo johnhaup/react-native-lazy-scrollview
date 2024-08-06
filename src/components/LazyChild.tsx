@@ -23,10 +23,15 @@ interface Props {
   /**
    * Callback to fire when the LazyChild's viewable area exceeds the percentVisibleThreshold.
    */
-  onPercentVisibleThresholdPass?: () => void;
+  onVisibilityEnter?: () => void;
+  /**
+   * Callback to fire when the LazyChild's viewable area goes under the percentVisibleThreshold after being above it.
+   */
+  onVisibilityExit?: () => void;
   /**
    * Protects against firing callback on measurement with zero value.  Default is true.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
    */
+  // TODO Is there a way to use height here?  I know this is re: 0 as a Y measurement and the issue is with the views all starting at 0.  Need a more reliable way to check if the view is at the top of the scrollview or hasn't rendered properly yet.
   ignoreZeroMeasurement?: boolean;
 }
 
@@ -37,22 +42,24 @@ export function LazyChild({
   children,
   onThresholdPass,
   percentVisibleThreshold = 1,
-  onPercentVisibleThresholdPass,
   ignoreZeroMeasurement = true,
+  onVisibilityEnter,
+  onVisibilityExit,
 }: Props) {
-  const { triggerValue, hasReachedEnd, scrollValue, bottomYValue } =
+  const { triggerValue, hasReachedEnd, scrollValue, topYValue, bottomYValue } =
     useAnimatedContext();
 
   const _viewRef = useAnimatedRef<Animated.View>();
   const _hasFiredScrollViewThresholdTrigger = useSharedValue(false);
   const _ignoreZeroMeasurement = useSharedValue(ignoreZeroMeasurement);
+  // TODO move this check to in the hook.  _canMeasure is causing instability
   const _isAndroid = useSharedValue(Platform.OS === 'android');
   const _canMeasure = useDerivedValue(
     // https://github.com/software-mansion/react-native-reanimated/issues/5006#issuecomment-1826495797
     // Running same check on iOS sometimes causes the view to not be measured
-    () => !_isAndroid.value || (_viewRef.current && _isAndroid.value),
-    []
+    () => true
   );
+  const _hasBecomeVisible = useSharedValue(false);
 
   const handleScrollViewThresholdPass = useCallback(() => {
     if (!_hasFiredScrollViewThresholdTrigger.value) {
@@ -71,7 +78,7 @@ export function LazyChild({
         return true;
       }
 
-      if (!_canMeasure) {
+      if (!_canMeasure.value) {
         return false;
       }
 
@@ -99,65 +106,90 @@ export function LazyChild({
   );
 
   const _shouldMeasurePercentVisible = useSharedValue(
-    typeof onPercentVisibleThresholdPass === 'function'
+    typeof onVisibilityEnter === 'function'
+  );
+  const _shouldFireVisibilityExit = useSharedValue(
+    typeof onVisibilityExit === 'function'
   );
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
-  const _hasFiredPercentVisibleTrigger = useSharedValue(false);
+  const _hasFiredOnVisibilityEntered = useSharedValue(false);
+  const _hasFiredOnVisibilityExited = useSharedValue(false);
 
-  const handlePercentTrigger = useCallback(() => {
-    if (
-      !_hasFiredPercentVisibleTrigger.value &&
-      onPercentVisibleThresholdPass
-    ) {
-      _hasFiredPercentVisibleTrigger.value = true;
-      onPercentVisibleThresholdPass();
+  const handleOnVisibilityEntered = useCallback(() => {
+    if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
+      _hasFiredOnVisibilityEntered.value = true;
+      _hasFiredOnVisibilityExited.value = false;
+      onVisibilityEnter();
     }
-  }, [_hasFiredPercentVisibleTrigger, onPercentVisibleThresholdPass]);
+  }, [
+    _hasFiredOnVisibilityEntered,
+    _hasFiredOnVisibilityExited,
+    onVisibilityEnter,
+  ]);
 
-  useAnimatedReaction(
-    () => {
-      if (!_shouldMeasurePercentVisible) {
-        return false;
-      }
+  const handleOnVisibilityExited = useCallback(() => {
+    if (
+      onVisibilityExit &&
+      _hasFiredOnVisibilityEntered.value &&
+      !_hasFiredOnVisibilityExited.value
+    ) {
+      _hasFiredOnVisibilityEntered.value = false;
+      _hasFiredOnVisibilityExited.value = true;
+      onVisibilityExit();
+    }
+  }, [
+    _hasFiredOnVisibilityEntered,
+    _hasFiredOnVisibilityExited,
+    onVisibilityExit,
+  ]);
 
-      if (_hasFiredPercentVisibleTrigger.value) {
-        return false;
-      }
+  const isVisible = useDerivedValue(() => {
+    if (!_canMeasure.value) {
+      return false;
+    }
 
-      if (hasReachedEnd.value) {
-        return true;
-      }
-
-      if (!_canMeasure) {
-        return false;
-      }
-
+    if (_WORKLET) {
       const measurement = measure(_viewRef);
 
       // Track scollValue to make reaction fire
       if (measurement !== null && scrollValue.value > -1) {
-        if (_ignoreZeroMeasurement.value && measurement.pageY === 0) {
+        const topOfView = measurement.pageY;
+        const bottomOfView = measurement.pageY + measurement.height;
+
+        if (_ignoreZeroMeasurement.value && topOfView === 0) {
           return false;
         }
 
-        const percentOffset = measurement.height * _percentVisibleTrigger.value;
-        const percentTrigger = bottomYValue.value - percentOffset;
+        const visibilityHeight =
+          measurement.height * _percentVisibleTrigger.value;
+        const visibleEnterTrigger = bottomYValue.value - visibilityHeight;
+        const visibleExitTrigger = topYValue.value + visibilityHeight;
 
-        if (percentTrigger <= 0) {
+        if (visibleEnterTrigger <= 0) {
           return false;
         }
 
         return (
-          measurement.pageY < percentTrigger &&
-          !_hasFiredPercentVisibleTrigger.value
+          topOfView < visibleEnterTrigger && bottomOfView > visibleExitTrigger
         );
       }
+    }
 
-      return false;
-    },
-    (shouldFirePercentTrigger) => {
-      if (shouldFirePercentTrigger) {
-        runOnJS(handlePercentTrigger)();
+    return false;
+  }, []);
+
+  useAnimatedReaction(
+    () => isVisible.value,
+    (isLazyChildVisible) => {
+      if (isLazyChildVisible) {
+        _hasBecomeVisible.value = true;
+        if (_shouldMeasurePercentVisible.value) {
+          runOnJS(handleOnVisibilityEntered)();
+        }
+      } else {
+        if (_shouldFireVisibilityExit.value) {
+          runOnJS(handleOnVisibilityExited)();
+        }
       }
     }
   );

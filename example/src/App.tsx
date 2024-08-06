@@ -1,15 +1,8 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 
 import { random } from 'lodash';
 import shuffle from 'lodash/shuffle';
-import compact from 'lodash/compact';
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
 import { LazyScrollView } from 'react-native-lazy-scrollview';
 import { ColorBlock } from './components/ColorBlock';
 
@@ -79,7 +72,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     height: 50,
     justifyContent: 'flex-end',
-    alignItems: 'center',
   },
   offsetText: {
     color: 'white',
@@ -87,5 +79,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     backgroundColor: '#000',
     padding: 8,
+    alignSelf: 'flex-start',
   },
 });

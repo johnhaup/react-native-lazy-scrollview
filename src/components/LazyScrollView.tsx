@@ -33,20 +33,21 @@ export function LazyScrollView({
   const _offset = useSharedValue(injectedOffset || 0);
   const _containerHeight = useSharedValue(0);
   const _contentHeight = useSharedValue(0);
-  const _scrollViewTopY = useSharedValue(0);
   /**
    * Starts at 0 and increases as the user scrolls down
    */
   const scrollValue = useScrollViewOffset(_scrollRef);
   const hasReachedEnd = useDerivedValue(() => {
     if (!_contentHeight.value || !_containerHeight.value) {
+      // Container and contend measurements have not completed
       return false;
     }
 
     return scrollValue.value >= _contentHeight.value - _containerHeight.value;
   });
+  const topYValue = useSharedValue(0);
   const bottomYValue = useDerivedValue(
-    () => _containerHeight.value + _scrollViewTopY.value
+    () => _containerHeight.value + topYValue.value
   );
   const triggerValue = useDerivedValue(
     () => bottomYValue.value + _offset.value
@@ -57,12 +58,12 @@ export function LazyScrollView({
       _containerHeight.value = e.nativeEvent.layout.height;
       _wrapperRef.current?.measureInWindow(
         (_: number, y: number, _2: number, height: number) => {
-          _scrollViewTopY.value = y;
+          topYValue.value = y;
           _contentHeight.value = height;
         }
       );
     },
-    [_containerHeight, _contentHeight, _scrollViewTopY]
+    [_containerHeight, _contentHeight, topYValue]
   );
 
   const onContentContainerLayout = useCallback(
@@ -78,7 +79,6 @@ export function LazyScrollView({
       ref={_scrollRef}
       scrollEventThrottle={16}
       onLayout={onLayout}
-      // TODO handle x & width values if horizontal is true
       horizontal={false}
     >
       <AnimatedContext.Provider
@@ -86,6 +86,7 @@ export function LazyScrollView({
           hasReachedEnd,
           triggerValue,
           scrollValue,
+          topYValue,
           bottomYValue,
         }}
       >
