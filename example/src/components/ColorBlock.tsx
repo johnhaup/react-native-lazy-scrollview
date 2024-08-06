@@ -18,9 +18,9 @@ const NO_LAZY_CHILD_BACKGROUNDS = [
   '#1e90ff',
 ];
 
-const PERCENT = 0.75;
+const PERCENT = 0.9;
 const PERCENT_STRING = `${PERCENT * 100}%`;
-const PERCENT_TEXT = `${PERCENT_STRING} threshold passed`;
+const PERCENT_TEXT = `${PERCENT_STRING} not visible`;
 
 export function ColorBlock({
   source,
@@ -30,16 +30,21 @@ export function ColorBlock({
   nested?: boolean;
 }) {
   const [triggered, setTriggered] = useState(false);
-  const [percentTriggered, setPercentTriggered] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const onThresholdPass = () => {
     // Make api call
     setTriggered(true);
   };
 
-  const onPercentVisibleThresholdPass = () => {
-    // Make analytic call
-    setPercentTriggered(true);
+  const onVisibilityEnter = () => {
+    console.log('ENTER', source?.toString());
+    setIsVisible(true);
+  };
+
+  const onVisibilityExit = () => {
+    console.log('EXIT', source?.toString());
+    setIsVisible(false);
   };
 
   const backgroundColor = useMemo(() => sample(NO_LAZY_CHILD_BACKGROUNDS), []);
@@ -62,7 +67,8 @@ export function ColorBlock({
         </Text>
         <LazyChild
           onThresholdPass={onThresholdPass}
-          onPercentVisibleThresholdPass={onPercentVisibleThresholdPass}
+          onVisibilityEnter={onVisibilityEnter}
+          onVisibilityExit={onVisibilityExit}
           percentVisibleThreshold={PERCENT}
         >
           <View style={styles.container}>
@@ -71,10 +77,11 @@ export function ColorBlock({
             ) : (
               <ActivityIndicator />
             )}
-            {percentTriggered && (
-              <Text style={styles.percentText}>{PERCENT_TEXT}</Text>
+            {!isVisible && (
+              <View style={styles.percentTextWrapper}>
+                <Text style={styles.percentText}>{PERCENT_TEXT}</Text>
+              </View>
             )}
-            <View style={styles.percentLine} />
           </View>
         </LazyChild>
       </View>
@@ -84,7 +91,8 @@ export function ColorBlock({
   return (
     <LazyChild
       onThresholdPass={onThresholdPass}
-      onPercentVisibleThresholdPass={onPercentVisibleThresholdPass}
+      onVisibilityEnter={onVisibilityEnter}
+      onVisibilityExit={onVisibilityExit}
       percentVisibleThreshold={PERCENT}
     >
       <View style={styles.container}>
@@ -93,10 +101,11 @@ export function ColorBlock({
         ) : (
           <ActivityIndicator />
         )}
-        {percentTriggered && (
-          <Text style={styles.percentText}>{PERCENT_TEXT}</Text>
+        {!isVisible && (
+          <View style={styles.percentTextWrapper}>
+            <Text style={styles.percentText}>{PERCENT_TEXT}</Text>
+          </View>
         )}
-        <View style={styles.percentLine} />
       </View>
     </LazyChild>
   );
@@ -132,22 +141,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     margin: 16,
   },
-  percentText: {
+  percentTextWrapper: {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  percentText: {
     color: 'red',
     fontSize: 16,
     padding: 8,
-    width: '100%',
-  },
-  percentLine: {
-    position: 'absolute',
-    top: PERCENT_STRING,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: 'red',
+    textAlign: 'center',
   },
 });
