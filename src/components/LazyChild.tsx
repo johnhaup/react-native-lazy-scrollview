@@ -8,7 +8,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAnimatedContext } from '../context/AnimatedContext';
-import { Platform } from 'react-native';
 
 interface Props {
   children: React.ReactNode;
@@ -52,14 +51,6 @@ export function LazyChild({
   const _viewRef = useAnimatedRef<Animated.View>();
   const _hasFiredScrollViewThresholdTrigger = useSharedValue(false);
   const _ignoreZeroMeasurement = useSharedValue(ignoreZeroMeasurement);
-  // TODO move this check to in the hook.  _canMeasure is causing instability
-  const _isAndroid = useSharedValue(Platform.OS === 'android');
-  const _canMeasure = useDerivedValue(
-    // https://github.com/software-mansion/react-native-reanimated/issues/5006#issuecomment-1826495797
-    // Running same check on iOS sometimes causes the view to not be measured
-    () => true
-  );
-  const _hasBecomeVisible = useSharedValue(false);
 
   const handleScrollViewThresholdPass = useCallback(() => {
     if (!_hasFiredScrollViewThresholdTrigger.value) {
@@ -76,10 +67,6 @@ export function LazyChild({
 
       if (hasReachedEnd.value) {
         return true;
-      }
-
-      if (!_canMeasure.value) {
-        return false;
       }
 
       const measurement = measure(_viewRef);
@@ -144,10 +131,6 @@ export function LazyChild({
   ]);
 
   const isVisible = useDerivedValue(() => {
-    if (!_canMeasure.value) {
-      return false;
-    }
-
     if (_WORKLET) {
       const measurement = measure(_viewRef);
 
@@ -176,13 +159,12 @@ export function LazyChild({
     }
 
     return false;
-  }, []);
+  });
 
   useAnimatedReaction(
     () => isVisible.value,
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
-        _hasBecomeVisible.value = true;
         if (_shouldMeasurePercentVisible.value) {
           runOnJS(handleOnVisibilityEntered)();
         }
@@ -194,5 +176,10 @@ export function LazyChild({
     }
   );
 
-  return <Animated.View ref={_viewRef}>{children}</Animated.View>;
+  return (
+    // https://github.com/software-mansion/react-native-reanimated/blob/d8ef9c27c31dd2c32d4c3a2111326a448bf19ec9/packages/react-native-reanimated/src/platformFunctions/measure.ts#L56
+    <Animated.View ref={_viewRef} collapsable={false}>
+      {children}
+    </Animated.View>
+  );
 }
