@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { StatusBar, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedRef,
   useDerivedValue,
@@ -58,7 +58,7 @@ export function LazyScrollView({
       _containerHeight.value = e.nativeEvent.layout.height;
       _wrapperRef.current?.measureInWindow(
         (_: number, y: number, _2: number, height: number) => {
-          topYValue.value = y;
+          topYValue.value = y + (StatusBar.currentHeight || 0);
           _contentHeight.value = height;
         }
       );
