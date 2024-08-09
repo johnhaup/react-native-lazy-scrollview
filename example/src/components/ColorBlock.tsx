@@ -38,12 +38,10 @@ export function ColorBlock({
   };
 
   const onVisibilityEnter = () => {
-    console.log('ENTER', source?.toString());
     setIsVisible(true);
   };
 
   const onVisibilityExit = () => {
-    console.log('EXIT', source?.toString());
     setIsVisible(false);
   };
 
