@@ -63,14 +63,16 @@ export function LazyScrollView({
         }
       );
     },
-    [_containerHeight, _contentHeight, topYValue]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+    []
   );
 
   const onContentContainerLayout = useCallback(
     (e: LayoutChangeEvent) => {
       _contentHeight.value = e.nativeEvent.layout.height;
     },
-    [_contentHeight]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+    []
   );
 
   return (
