@@ -32,9 +32,14 @@ export function ColorBlock({
   const [triggered, setTriggered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  const onThresholdPass = () => {
+  const onEnterThresholdPass = () => {
     // Make api call
     setTriggered(true);
+  };
+
+  const onExitThresholdPass = () => {
+    // Make api call
+    setTriggered(false);
   };
 
   const onVisibilityEnter = () => {
@@ -64,7 +69,8 @@ export function ColorBlock({
           I am not wrapped in LazyChild, but my child is!
         </Text>
         <LazyChild
-          onThresholdPass={onThresholdPass}
+          onEnterThresholdPass={onEnterThresholdPass}
+          onExitThresholdPass={onExitThresholdPass}
           onVisibilityEnter={onVisibilityEnter}
           onVisibilityExit={onVisibilityExit}
           percentVisibleThreshold={PERCENT}
@@ -88,7 +94,8 @@ export function ColorBlock({
 
   return (
     <LazyChild
-      onThresholdPass={onThresholdPass}
+      onEnterThresholdPass={onEnterThresholdPass}
+      onExitThresholdPass={onExitThresholdPass}
       onVisibilityEnter={onVisibilityEnter}
       onVisibilityExit={onVisibilityExit}
       percentVisibleThreshold={PERCENT}
