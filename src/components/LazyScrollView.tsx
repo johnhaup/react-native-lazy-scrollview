@@ -29,27 +29,24 @@ export function LazyScrollView({
 }: Props) {
   const _scrollRef = useAnimatedRef<Animated.ScrollView>();
   const _wrapperRef = useRef<View>(null);
-
   const _offset = useSharedValue(injectedOffset || 0);
   const _containerHeight = useSharedValue(0);
   const _contentHeight = useSharedValue(0);
+
   /**
    * Starts at 0 and increases as the user scrolls down
    */
   const scrollValue = useScrollViewOffset(_scrollRef);
-  const hasReachedEnd = useDerivedValue(() => {
-    if (!_contentHeight.value || !_containerHeight.value) {
-      // Container and contend measurements have not completed
-      return false;
-    }
 
-    return scrollValue.value >= _contentHeight.value - _containerHeight.value;
-  });
   const topYValue = useSharedValue(0);
   const bottomYValue = useDerivedValue(
     () => _containerHeight.value + topYValue.value
   );
-  const triggerValue = useDerivedValue(
+
+  const topTriggerValue = useDerivedValue(
+    () => topYValue.value - _offset.value
+  );
+  const bottomTriggerValue = useDerivedValue(
     () => bottomYValue.value + _offset.value
   );
 
@@ -85,11 +82,11 @@ export function LazyScrollView({
     >
       <AnimatedContext.Provider
         value={{
-          hasReachedEnd,
-          triggerValue,
           scrollValue,
           topYValue,
           bottomYValue,
+          topTriggerValue,
+          bottomTriggerValue,
         }}
       >
         <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
