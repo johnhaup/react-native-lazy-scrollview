@@ -13,7 +13,10 @@ import { useVisibilityCallbacks } from './hooks/useVisibilityCallbacks';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-interface Props {
+/**
+ * @interface LazyChildProps
+ */
+export interface LazyChildProps {
   children: React.ReactNode;
   /**
    * Callback to fire when the LazyChild passes the LazyScrollView's offset after being offscreen
@@ -24,7 +27,8 @@ interface Props {
    */
   onExitThresholdPass?: () => void;
   /**
-   * How much of the LazyChild should be visible before the percent visible threshold is passed.  For example, 0.5 would fire onPercentVisibleThresholdPass when 50% of the LazyChild is visible.  This has no effect if onPercentVisibleThresholdPass is not provided.  Defaults to 1.0.
+   * How much of the LazyChild should be visible before the percent visible threshold is passed.  For example, 0.5 would fire onPercentVisibleThresholdPass when 50% of the LazyChild is visible.  This has no effect if onPercentVisibleThresholdPass is not provided.
+   * @defaultValue 1.0
    */
   percentVisibleThreshold?: number;
   /**
@@ -36,9 +40,9 @@ interface Props {
    */
   onVisibilityExit?: () => void;
   /**
-   * Protects against firing callback on measurement with zero value.  Default is true.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
+   * Protects against firing callback on measurement with zero value.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
+   * @defaultValue true
    */
-  // TODO Is there a way to use height here?  I know this is re: 0 as a Y measurement and the issue is with the views all starting at 0.  Need a more reliable way to check if the view is at the top of the scrollview or hasn't rendered properly yet.
   ignoreZeroMeasurement?: boolean;
   // TODO Add way to disable measuring if consumer only wants to use onThresholdPass (for example)
   // disableAfterThresholdPass?: boolean;
@@ -52,7 +56,7 @@ export function LazyChild({
   ignoreZeroMeasurement = true,
   onVisibilityEnter,
   onVisibilityExit,
-}: Props) {
+}: LazyChildProps) {
   const {
     topTriggerValue,
     bottomTriggerValue,
