@@ -27,7 +27,7 @@ yarn add react-native-lazy-scrollview
 
 This library requires reanimated. Follow their [installation instructions](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation).
 
-API Documentation
+[API Documentation](https://johnhaup.github.io/react-native-lazy-scrollview/)
 
 ## Usage Examples
 
