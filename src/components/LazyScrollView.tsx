@@ -8,16 +8,19 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
 
-interface Props
-  extends Omit<
-    React.ComponentProps<typeof Animated.ScrollView>,
-    'onLayout' | 'onScroll' | 'ref' | 'scrollEventThrottle'
-  > {
+export interface LazyScrollViewProps {
   /**
-   * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Defaults to 0 (bottom of ScrollView).
+   * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Accepts [ScrollView props](https://reactnative.dev/docs/scrollview).
+   * @defaultValue 0 (bottom of ScrollView)
    */
   offset?: number;
 }
+
+type Props = LazyScrollViewProps &
+  Omit<
+    React.ComponentProps<typeof Animated.ScrollView>,
+    'onLayout' | 'onScroll' | 'ref' | 'scrollEventThrottle'
+  >;
 
 /**
  * ScrollView to wrap Lazy Children in.

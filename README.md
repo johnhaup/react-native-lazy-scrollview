@@ -13,9 +13,7 @@
 
 To provide an easy way to trigger logic when a child (or nested child) of a `ScrollView` passes a threshold scroll value. This is useful when you have a screen with dynamic content that you don't want to unmount when it scrolls offscreen, but also would like to lazy load. Also provides ability to trigger additional logic when a percentage of your component is visible in the `ScrollView`.
 
-Example: Say you have some components lower in your scoll that make expensive api calls. Give them a skeleton loader, make your threshold `300`, and trigger your api call when the component is within `300` px of the bottom of the `ScrollView` by passing `yourApiCall` to the `LazyChild` that wraps your component. And then say you're like "yeah but I also want to know when 75% of this api-heavy component is viewable". Then set the `percentVisibleThreshold` on the LazyChild wrapping that sucker to `0.75`, then trigger and analytic call with `onVisibilityEnter`! This will fire every time the component leaves or enters. It has `onVisibilityExit`
-
-<img alt="demo" src="./__tests__/demo.gif" width=300 height=649/>
+Example: Say you have some components lower in your scoll that make expensive api calls. Give them a skeleton loader, make your threshold `300`, and trigger your api call when the component is within `300` px of the bottom of the `ScrollView` by passing `yourApiCall` to the `onEnterThresholdPass` prop on the `LazyChild` that wraps your component. And then say you're like "yeah but I also want to know when 75% of this api-heavy component is viewable". Then set the `percentVisibleThreshold` on the LazyChild wrapping that sucker to `0.75`, then trigger and analytic call with `onVisibilityEnter`! This will fire every time the component leaves or enters. It has `onVisibilityExit`, which you can use if you're feeling super froggy and want to pause a video when it goes under a certain percentage of viewable area, and if then you can use `onExitThresholdPass` to unmount the video and replace it with a spacer.
 
 #### ⚠️ Limitations
 
@@ -29,7 +27,9 @@ yarn add react-native-lazy-scrollview
 
 This library requires reanimated. Follow their [installation instructions](https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation).
 
-## Usage
+API Documentation
+
+## Usage Examples
 
 ```js
 // MyCoolHomeScreen.tsx
@@ -57,7 +57,7 @@ export function CoolComponentC() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const onThresholdPass = async () => {
+  const onEnterThresholdPass = async () => {
     try {
       const fetchedData = await someExpensiveApiCall();
       setData(fetchedData);
@@ -80,7 +80,7 @@ export function CoolComponentC() {
 
   return (
     <LazyChild
-      onThresholdPass={onThresholdPass}
+      onEnterThresholdPass={onEnterThresholdPass}
       onVisibilityEnter={onVisibilityEnter}
       percentVisibleThreshold={0.75}
     >
@@ -101,7 +101,7 @@ export function PriceMasterVideo() {
   const [loading, setLoading] = useState(true);
   const [paused, setPaused] = useState(true);
 
-  const onThresholdPass = async () => {
+  const onEnterThresholdPass = async () => {
     setLoading(false);
   };
 
@@ -118,7 +118,7 @@ export function PriceMasterVideo() {
 
   return (
     <LazyChild
-      onThresholdPass={onThresholdPass}
+      onEnterThresholdPass={onEnterThresholdPass}
       onVisibilityEnter={onVisibilityEnter}
       percentVisibleThreshold={0.25}
     >
@@ -131,22 +131,6 @@ export function PriceMasterVideo() {
   );
 }
 ```
-
-## API
-
-**LazyScrollView**
-| Prop | Type | Optional | Default | Description |
-| --- | --- | --- | --- | --- |
-| `offset` | `number` | Yes | 0 (bottom of `LazyScrollView`) | How far above or below the bottom of the `LazyScrollView` the threshold trigger is. Negative is above, positive it below.
-
-**LazyChild**
-| Prop | Type | Optional | Default | Description |
-| --- | --- | --- | --- | --- |
-| `onThresholdPass` | `function` | **No** | - | Callback that will fire when top of `View` passes threshold trigger.
-| `percentVisibleThreshold` | `number` (Unit Interval) | Yes | 1 | Percentage of LazyChild that will trigger `onPercentVisibleThresholdPass`.
-| `onVisibilityEnter` | `function` | Yes | - | Callback that will fire when `percentVisibleThreshold` is visible above bottom of LazyScrollView. Note that this trigger is tied to the bottom of the LazyScrollView, not the threshold. Will refire if LazyChild leaves screen and comes back.
-| `onVisibilityExit` | `function` | Yes | - | Callback that will fire after LazyChild has become visible using `percentVisibleThreshold` and then goes back under that threshold. Will refire each time LazyChild enters screen and leaves.
-| `ignoreZeroMeasurement` | `boolean` | Yes | `true` | Protects against firing callback on measurement with zero value. Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
 
 ## Example
 
