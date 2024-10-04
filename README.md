@@ -39,16 +39,27 @@ This library requires reanimated. Follow their [installation instructions](https
 ```js
 // MyCoolHomeScreen.tsx
 import { LazyScrollView } from 'react-native-lazy-scrollview';
-import { CoolComponentA, CoolComponentB, CoolComponentC } from './components';
+import {
+  CoolComponentA,
+  CoolComponentB,
+  CoolComponentC,
+  PriceMasterVideo,
+  ScrollToTopButton,
+} from './components';
 
 export function MyCoolHomeScreen() {
+  const ref = useRef<LazyScrollViewMethods>(null);
+
   return (
     // Trigger onThresholdReached when child is 300 pixels below the bottom
     <LazyScrollView offset={300} showsVerticalScrollIndicator={false}>
       <CoolComponentA />
-      <VideoPlayer />
+      <PriceMasterVideo />
       <CoolComponentB />
       <CoolComponentC />
+      <ScrollToTopButton
+        onPress={() => ref.current?.scrollToStart({ animated: true })}
+      />
     </LazyScrollView>
   );
 }

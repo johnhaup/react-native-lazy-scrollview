@@ -1,5 +1,16 @@
-import React, { useCallback, useRef } from 'react';
-import { StatusBar, View, type LayoutChangeEvent } from 'react-native';
+import React, {
+  MutableRefObject,
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from 'react';
+import {
+  ScrollView,
+  StatusBar,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import Animated, {
   useAnimatedRef,
   useDerivedValue,
@@ -8,12 +19,22 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
 
+export interface LazyScrollViewMethods {
+  scrollTo: typeof ScrollView.prototype.scrollTo;
+  scrollToStart: typeof ScrollView.prototype.scrollToEnd;
+  scrollToEnd: typeof ScrollView.prototype.scrollToEnd;
+}
+
 export interface LazyScrollViewProps {
   /**
    * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Accepts [ScrollView props](https://reactnative.dev/docs/scrollview).
    * @defaultValue 0 (bottom of ScrollView)
    */
   offset?: number;
+  /**
+   * Ref to the LazyScrollView.  Exposes scrollTo, scrollToStart, and scrollToEnd methods.
+   */
+  ref?: MutableRefObject<LazyScrollViewMethods>;
 }
 
 type Props = LazyScrollViewProps &
@@ -25,79 +46,95 @@ type Props = LazyScrollViewProps &
 /**
  * ScrollView to wrap Lazy Children in.
  */
-export function LazyScrollView({
-  children,
-  offset: injectedOffset,
-  ...rest
-}: Props) {
-  const _scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const _wrapperRef = useRef<View>(null);
-  const _offset = useSharedValue(injectedOffset || 0);
-  const _containerHeight = useSharedValue(0);
-  const _contentHeight = useSharedValue(0);
-  const _hasProvider = useSharedValue(true);
+const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
+  ({ children, offset: injectedOffset, ...rest }, ref) => {
+    const _scrollRef = useAnimatedRef<Animated.ScrollView>();
+    const _wrapperRef = useRef<View>(null);
+    const _offset = useSharedValue(injectedOffset || 0);
+    const _containerHeight = useSharedValue(0);
+    const _contentHeight = useSharedValue(0);
+    const _hasProvider = useSharedValue(true);
 
-  /**
-   * Starts at 0 and increases as the user scrolls down
-   */
-  const scrollValue = useScrollViewOffset(_scrollRef);
+    useImperativeHandle(ref, () => ({
+      scrollTo: (options) => {
+        _scrollRef.current?.scrollTo(options);
+      },
+      scrollToStart: (options) => {
+        _scrollRef.current?.scrollTo({
+          x: 0,
+          y: 0,
+          animated: options?.animated,
+        });
+      },
+      scrollToEnd: (options) => {
+        _scrollRef.current?.scrollToEnd(options);
+      },
+    }));
 
-  const topYValue = useSharedValue(0);
-  const bottomYValue = useDerivedValue(
-    () => _containerHeight.value + topYValue.value
-  );
+    /**
+     * Starts at 0 and increases as the user scrolls down
+     */
+    const scrollValue = useScrollViewOffset(_scrollRef);
 
-  const topTriggerValue = useDerivedValue(
-    () => topYValue.value - _offset.value
-  );
-  const bottomTriggerValue = useDerivedValue(
-    () => bottomYValue.value + _offset.value
-  );
+    const topYValue = useSharedValue(0);
+    const bottomYValue = useDerivedValue(
+      () => _containerHeight.value + topYValue.value
+    );
 
-  const onLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      _containerHeight.value = e.nativeEvent.layout.height;
-      _wrapperRef.current?.measureInWindow(
-        (_: number, y: number, _2: number, height: number) => {
-          topYValue.value = y + (StatusBar.currentHeight || 0);
-          _contentHeight.value = height;
-        }
-      );
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    []
-  );
+    const topTriggerValue = useDerivedValue(
+      () => topYValue.value - _offset.value
+    );
+    const bottomTriggerValue = useDerivedValue(
+      () => bottomYValue.value + _offset.value
+    );
 
-  const onContentContainerLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      _contentHeight.value = e.nativeEvent.layout.height;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    []
-  );
+    const onLayout = useCallback(
+      (e: LayoutChangeEvent) => {
+        _containerHeight.value = e.nativeEvent.layout.height;
+        _wrapperRef.current?.measureInWindow(
+          (_: number, y: number, _2: number, height: number) => {
+            topYValue.value = y + (StatusBar.currentHeight || 0);
+            _contentHeight.value = height;
+          }
+        );
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+      []
+    );
 
-  return (
-    <Animated.ScrollView
-      horizontal={false}
-      scrollEventThrottle={16}
-      {...rest}
-      ref={_scrollRef}
-      onLayout={onLayout}
-    >
-      <AnimatedContext.Provider
-        value={{
-          _hasProvider,
-          scrollValue,
-          topYValue,
-          bottomYValue,
-          topTriggerValue,
-          bottomTriggerValue,
-        }}
+    const onContentContainerLayout = useCallback(
+      (e: LayoutChangeEvent) => {
+        _contentHeight.value = e.nativeEvent.layout.height;
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+      []
+    );
+
+    return (
+      <Animated.ScrollView
+        horizontal={false}
+        scrollEventThrottle={16}
+        {...rest}
+        ref={_scrollRef}
+        onLayout={onLayout}
       >
-        <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
-          {children}
-        </View>
-      </AnimatedContext.Provider>
-    </Animated.ScrollView>
-  );
-}
+        <AnimatedContext.Provider
+          value={{
+            _hasProvider,
+            scrollValue,
+            topYValue,
+            bottomYValue,
+            topTriggerValue,
+            bottomTriggerValue,
+          }}
+        >
+          <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
+            {children}
+          </View>
+        </AnimatedContext.Provider>
+      </Animated.ScrollView>
+    );
+  }
+);
+
+export { LazyScrollView };
