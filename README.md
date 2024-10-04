@@ -15,6 +15,11 @@ To provide an easy way to trigger logic when a child (or nested child) of a `Scr
 
 Example: Say you have some components lower in your scoll that make expensive api calls. Give them a skeleton loader, make your threshold `300`, and trigger your api call when the component is within `300` px of the bottom of the `ScrollView` by passing `yourApiCall` to the `onEnterThresholdPass` prop on the `LazyChild` that wraps your component. And then say you're like "yeah but I also want to know when 75% of this api-heavy component is viewable". Then set the `percentVisibleThreshold` on the LazyChild wrapping that sucker to `0.75`, then trigger and analytic call with `onVisibilityEnter`! This will fire every time the component leaves or enters. It has `onVisibilityExit`, which you can use if you're feeling super froggy and want to pause a video when it goes under a certain percentage of viewable area, and if then you can use `onExitThresholdPass` to unmount the video and replace it with a spacer.
 
+#### Notes
+
+- If a `LazyChild` does not have a `LazyScrollview` ancestor, it will fire its `onEnterThresholdPass` and `onVisibilityEnter` on mount.
+- `scrollEventThrottle` defaults to 16.
+
 #### ⚠️ Limitations
 
 Currently only supports vertical ScrollView.

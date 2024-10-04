@@ -1,8 +1,15 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { random } from 'lodash';
 import shuffle from 'lodash/shuffle';
-import { ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
+import {
+  ImageSourcePropType,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { LazyScrollView } from 'react-native-lazy-scrollview';
 import { ColorBlock } from './components/ColorBlock';
 
@@ -27,7 +34,7 @@ const ALBUMS: ImageSourcePropType = [
 const OFFSET = -100;
 const SHUFFLED_ALBUMS = shuffle(ALBUMS);
 
-export default function App() {
+function VerticalScrollView() {
   const renderBlock = useCallback(
     (source: ImageSourcePropType | null, i: number) => (
       <ColorBlock key={`child_${i}`} source={source} nested={random(1) === 1} />
@@ -51,9 +58,74 @@ export default function App() {
   );
 }
 
+function NoContext() {
+  const renderBlock = useCallback(
+    (source: ImageSourcePropType | null, i: number) => (
+      <ColorBlock key={`child_${i}`} source={source} nested={random(1) === 1} />
+    ),
+    []
+  );
+
+  return (
+    <ScrollView
+      contentContainerStyle={styles.scrollview}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.noContextHeader}>
+        These aren't wrapped in a LazyScrollView, so all onThresholdPass and
+        onVisibilityEnter callbacks are fired once, on mount
+      </Text>
+      {SHUFFLED_ALBUMS.map(renderBlock)}
+    </ScrollView>
+  );
+}
+
+const demoTypes = ['vertical', 'nocontext'] as const;
+type DemoType = (typeof demoTypes)[number];
+
+export default function App() {
+  const [type, setType] = useState<DemoType>();
+
+  const renderButton = (text: DemoType) => {
+    const onPress = () => {
+      setType(text);
+    };
+
+    const active = type === text;
+
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        style={styles.button}
+        key={text}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.buttonText}>
+          {active ? '✅' : ''}
+          {text}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {type === 'vertical' && <VerticalScrollView />}
+      {type === 'nocontext' && <NoContext />}
+      <View style={styles.buttonContainer}>{demoTypes.map(renderButton)}</View>
+    </View>
+  );
+}
+
 const PADDING_VERTICAL = 64;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollviewContainer: {
     flex: 1,
     paddingVertical: PADDING_VERTICAL,
@@ -79,5 +151,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     padding: 8,
     alignSelf: 'flex-start',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 56,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+  },
+  button: {
+    backgroundColor: '#1e90ff',
+    padding: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginLeft: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  noContextHeader: {
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+    marginTop: PADDING_VERTICAL * 2,
   },
 });

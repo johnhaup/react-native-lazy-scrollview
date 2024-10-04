@@ -14,6 +14,7 @@ export const useEnteringCallbacks = ({
   _ignoreZeroMeasurement,
   _shouldFireThresholdEnter,
   _shouldFireThresholdExit,
+  _shouldFireEnterOnMount,
   topTriggerValue,
   bottomTriggerValue,
 }: {
@@ -23,6 +24,7 @@ export const useEnteringCallbacks = ({
   _ignoreZeroMeasurement: Animated.SharedValue<boolean>;
   _shouldFireThresholdEnter: Animated.SharedValue<boolean>;
   _shouldFireThresholdExit: Animated.SharedValue<boolean>;
+  _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topTriggerValue: Animated.SharedValue<number>;
   bottomTriggerValue: Animated.SharedValue<number>;
 }) => {
@@ -80,7 +82,7 @@ export const useEnteringCallbacks = ({
   });
 
   useAnimatedReaction(
-    () => isEntering.value,
+    () => isEntering.value || _shouldFireEnterOnMount.value,
     (hasLazyChildEntered) => {
       if (hasLazyChildEntered) {
         if (_shouldFireThresholdEnter.value) {

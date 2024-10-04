@@ -19,7 +19,7 @@ export interface LazyScrollViewProps {
 type Props = LazyScrollViewProps &
   Omit<
     React.ComponentProps<typeof Animated.ScrollView>,
-    'onLayout' | 'onScroll' | 'ref' | 'scrollEventThrottle'
+    'onLayout' | 'onScroll' | 'ref'
   >;
 
 /**
@@ -35,6 +35,7 @@ export function LazyScrollView({
   const _offset = useSharedValue(injectedOffset || 0);
   const _containerHeight = useSharedValue(0);
   const _contentHeight = useSharedValue(0);
+  const _hasProvider = useSharedValue(true);
 
   /**
    * Starts at 0 and increases as the user scrolls down
@@ -77,14 +78,15 @@ export function LazyScrollView({
 
   return (
     <Animated.ScrollView
+      horizontal={false}
+      scrollEventThrottle={16}
       {...rest}
       ref={_scrollRef}
-      scrollEventThrottle={16}
       onLayout={onLayout}
-      horizontal={false}
     >
       <AnimatedContext.Provider
         value={{
+          _hasProvider,
           scrollValue,
           topYValue,
           bottomYValue,
