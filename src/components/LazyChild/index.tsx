@@ -58,6 +58,7 @@ export function LazyChild({
   onVisibilityExit,
 }: LazyChildProps) {
   const {
+    _hasProvider,
     topTriggerValue,
     bottomTriggerValue,
     scrollValue,
@@ -83,10 +84,10 @@ export function LazyChild({
   const _measurement = useSharedValue<ReturnType<typeof measure>>(null);
 
   const _shouldFireThresholdEnter = useSharedValue(
-    typeof onVisibilityEnter === 'function'
+    typeof onEnterThresholdPass === 'function'
   );
   const _shouldFireThresholdExit = useSharedValue(
-    typeof onVisibilityExit === 'function'
+    typeof onExitThresholdPass === 'function'
   );
   const _shouldMeasurePercentVisible = useSharedValue(
     typeof onVisibilityEnter === 'function'
@@ -100,11 +101,14 @@ export function LazyChild({
    */
   const _shouldMeasure = useDerivedValue(
     () =>
-      typeof onEnterThresholdPass === 'function' ||
-      typeof onExitThresholdPass === 'function' ||
-      typeof onVisibilityEnter === 'function' ||
-      typeof onVisibilityExit === 'function'
+      _hasProvider.value &&
+      (_shouldFireThresholdEnter.value ||
+        _shouldFireThresholdExit.value ||
+        _shouldMeasurePercentVisible.value ||
+        _shouldFireVisibilityExit.value)
   );
+
+  const _shouldFireEnterOnMount = useSharedValue(!_hasProvider.value);
 
   useAnimatedReaction(
     () => {
@@ -133,6 +137,7 @@ export function LazyChild({
     _ignoreZeroMeasurement,
     _shouldFireThresholdEnter,
     _shouldFireThresholdExit,
+    _shouldFireEnterOnMount,
     topTriggerValue,
     bottomTriggerValue,
   });
@@ -145,6 +150,7 @@ export function LazyChild({
     _shouldFireVisibilityExit,
     _measurement,
     _ignoreZeroMeasurement,
+    _shouldFireEnterOnMount,
     topYValue,
     bottomYValue,
   });

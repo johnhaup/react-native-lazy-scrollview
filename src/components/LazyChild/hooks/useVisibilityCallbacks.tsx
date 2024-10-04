@@ -15,6 +15,7 @@ interface Props {
   _shouldFireVisibilityExit: Animated.SharedValue<boolean>;
   _measurement: Animated.SharedValue<ReturnType<typeof measure>>;
   _ignoreZeroMeasurement: Animated.SharedValue<boolean>;
+  _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topYValue: Animated.SharedValue<number>;
   bottomYValue: Animated.SharedValue<number>;
 }
@@ -27,6 +28,7 @@ export const useVisibilityCallbacks = ({
   _shouldFireVisibilityExit,
   _measurement,
   _ignoreZeroMeasurement,
+  _shouldFireEnterOnMount,
   topYValue,
   bottomYValue,
 }: Props) => {
@@ -92,7 +94,7 @@ export const useVisibilityCallbacks = ({
   });
 
   useAnimatedReaction(
-    () => isVisible.value,
+    () => isVisible.value || _shouldFireEnterOnMount.value,
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
         if (_shouldMeasurePercentVisible.value) {
