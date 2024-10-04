@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import { random } from 'lodash';
 import shuffle from 'lodash/shuffle';
@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LazyScrollView } from 'react-native-lazy-scrollview';
+import {
+  LazyScrollView,
+  LazyScrollViewMethods,
+} from 'react-native-lazy-scrollview';
 import { ColorBlock } from './components/ColorBlock';
 
 const ALBUMS: ImageSourcePropType = [
@@ -35,6 +38,8 @@ const OFFSET = -100;
 const SHUFFLED_ALBUMS = shuffle(ALBUMS);
 
 function VerticalScrollView() {
+  const ref = useRef<LazyScrollViewMethods>(null);
+
   const renderBlock = useCallback(
     (source: ImageSourcePropType | null, i: number) => (
       <ColorBlock key={`child_${i}`} source={source} nested={random(1) === 1} />
@@ -45,12 +50,28 @@ function VerticalScrollView() {
   return (
     <View style={styles.scrollviewContainer}>
       <LazyScrollView
+        ref={ref}
         contentContainerStyle={styles.scrollview}
         offset={OFFSET}
         showsVerticalScrollIndicator={false}
       >
         {SHUFFLED_ALBUMS.map(renderBlock)}
       </LazyScrollView>
+      <View style={styles.arrowsContainer}>
+        <TouchableOpacity
+          style={styles.arrowButton}
+          activeOpacity={0.7}
+          onPress={() => ref.current?.scrollToStart({ animated: true })}
+        >
+          <Text style={styles.arrow}>⬆️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => ref.current?.scrollToEnd({ animated: true })}
+        >
+          <Text style={styles.arrow}>⬇️</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.offsetBar}>
         <Text style={styles.offsetText}>{`Offset: ${OFFSET}`}</Text>
       </View>
@@ -182,4 +203,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: PADDING_VERTICAL * 2,
   },
+  arrowsContainer: {
+    top: 0,
+    bottom: 0,
+    right: 0,
+    position: 'absolute',
+    justifyContent: 'center',
+  },
+  arrowButton: { marginBottom: 8 },
+  arrow: { fontSize: 32 },
 });
