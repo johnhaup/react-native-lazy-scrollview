@@ -7,7 +7,7 @@ on:
 jobs:
   fast_forward_job:
     name: Fast Forward
-    if: github.event.issue.pull_request != '' && (contains(github.event.comment.body, '/fast-forward') || contains(github.event.comment.body, '/yolo'))
+    if: github.event.issue.pull_request != '' && (contains(github.event.comment.body, '/ff'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code into workspace directory
