@@ -13,11 +13,7 @@ import { useVisibilityCallbacks } from './hooks/useVisibilityCallbacks';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-/**
- * @interface LazyChildProps
- */
-export interface LazyChildProps {
-  children: React.ReactNode;
+export interface LazyChildCallbacks {
   /**
    * Callback to fire when the LazyChild passes the LazyScrollView's offset after being offscreen
    */
@@ -27,11 +23,6 @@ export interface LazyChildProps {
    */
   onExitThresholdPass?: () => void;
   /**
-   * How much of the LazyChild should be visible before the percent visible threshold is passed.  For example, 0.5 would fire onPercentVisibleThresholdPass when 50% of the LazyChild is visible.  This has no effect if onPercentVisibleThresholdPass is not provided.
-   * @defaultValue 1.0
-   */
-  percentVisibleThreshold?: number;
-  /**
    * Callback to fire when the LazyChild's viewable area exceeds the percentVisibleThreshold.
    */
   onVisibilityEnter?: () => void;
@@ -39,13 +30,27 @@ export interface LazyChildProps {
    * Callback to fire when the LazyChild's viewable area goes under the percentVisibleThreshold after being above it.
    */
   onVisibilityExit?: () => void;
+}
+
+/**
+ * @interface LazyChildProps
+ */
+export interface LazyChildProps extends LazyChildCallbacks {
+  children: React.ReactNode;
+  /**
+   * How much of the LazyChild should be visible before the percent visible threshold is passed.  For example, 0.5 would fire onPercentVisibleThresholdPass when 50% of the LazyChild is visible.  This has no effect if onPercentVisibleThresholdPass is not provided.
+   * @defaultValue 1.0
+   */
+  percentVisibleThreshold?: number;
   /**
    * Protects against firing callback on measurement with zero value.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
    * @defaultValue true
    */
   ignoreZeroMeasurement?: boolean;
-  // TODO Add way to disable measuring if consumer only wants to use onThresholdPass (for example)
-  // disableAfterThresholdPass?: boolean;
+  /**
+   * Setting true for a function will prevent the function from firing more than once.  If all provided functions have a bailout config set to true and the functions have fired, the LazyChild will not measure or react to scroll events.  Recommended if you just need to fire something once.
+   */
+  bailoutConfig?: { [K in keyof LazyChildCallbacks]: boolean | undefined };
 }
 
 export function LazyChild({
@@ -56,6 +61,7 @@ export function LazyChild({
   ignoreZeroMeasurement = true,
   onVisibilityEnter,
   onVisibilityExit,
+  bailoutConfig,
 }: LazyChildProps) {
   const {
     _hasProvider,
@@ -95,6 +101,14 @@ export function LazyChild({
   const _shouldFireVisibilityExit = useSharedValue(
     typeof onVisibilityExit === 'function'
   );
+  const _enteringBailoutConfig = useSharedValue({
+    onEnterThresholdPass: bailoutConfig?.onEnterThresholdPass ?? false,
+    onExitThresholdPass: bailoutConfig?.onExitThresholdPass ?? false,
+  });
+  const _visibilityBailoutConfig = useSharedValue({
+    onVisibilityEnter: bailoutConfig?.onVisibilityEnter ?? false,
+    onVisibilityExit: bailoutConfig?.onVisibilityExit ?? false,
+  });
 
   /**
    * At least one callback is a function.
@@ -140,6 +154,7 @@ export function LazyChild({
     _shouldFireEnterOnMount,
     topTriggerValue,
     bottomTriggerValue,
+    _enteringBailoutConfig,
   });
 
   useVisibilityCallbacks({
@@ -153,6 +168,7 @@ export function LazyChild({
     _shouldFireEnterOnMount,
     topYValue,
     bottomYValue,
+    _visibilityBailoutConfig,
   });
 
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {

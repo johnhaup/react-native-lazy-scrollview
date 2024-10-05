@@ -17,6 +17,7 @@ export const useEnteringCallbacks = ({
   _shouldFireEnterOnMount,
   topTriggerValue,
   bottomTriggerValue,
+  _enteringBailoutConfig,
 }: {
   onEnterThresholdPass?: () => void;
   onExitThresholdPass?: () => void;
@@ -27,6 +28,10 @@ export const useEnteringCallbacks = ({
   _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topTriggerValue: Animated.SharedValue<number>;
   bottomTriggerValue: Animated.SharedValue<number>;
+  _enteringBailoutConfig: Animated.SharedValue<{
+    onEnterThresholdPass: boolean;
+    onExitThresholdPass: boolean;
+  }>;
 }) => {
   const _hasFiredThresholdEntered = useSharedValue(false);
   const _hasFiredThresholdExited = useSharedValue(false);
@@ -35,13 +40,15 @@ export const useEnteringCallbacks = ({
     if (onEnterThresholdPass && !_hasFiredThresholdEntered.value) {
       _hasFiredThresholdEntered.value = true;
       _hasFiredThresholdExited.value = false;
+
+      if (_enteringBailoutConfig.value.onEnterThresholdPass) {
+        _shouldFireThresholdEnter.value = false;
+      }
+
       onEnterThresholdPass();
     }
-  }, [
-    _hasFiredThresholdEntered,
-    _hasFiredThresholdExited,
-    onEnterThresholdPass,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+  }, [onEnterThresholdPass]);
 
   const handleOnThresholdExited = useCallback(() => {
     if (
@@ -51,13 +58,15 @@ export const useEnteringCallbacks = ({
     ) {
       _hasFiredThresholdEntered.value = false;
       _hasFiredThresholdExited.value = true;
+
+      if (_enteringBailoutConfig.value.onExitThresholdPass) {
+        _shouldFireThresholdExit.value = false;
+      }
+
       onExitThresholdPass();
     }
-  }, [
-    _hasFiredThresholdEntered,
-    _hasFiredThresholdExited,
-    onExitThresholdPass,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+  }, [onExitThresholdPass]);
 
   const isEntering = useDerivedValue(() => {
     if (_WORKLET) {

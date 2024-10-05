@@ -18,6 +18,10 @@ interface Props {
   _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topYValue: Animated.SharedValue<number>;
   bottomYValue: Animated.SharedValue<number>;
+  _visibilityBailoutConfig: Animated.SharedValue<{
+    onVisibilityEnter: boolean;
+    onVisibilityExit: boolean;
+  }>;
 }
 
 export const useVisibilityCallbacks = ({
@@ -31,38 +35,49 @@ export const useVisibilityCallbacks = ({
   _shouldFireEnterOnMount,
   topYValue,
   bottomYValue,
+  _visibilityBailoutConfig,
 }: Props) => {
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
   const _hasFiredOnVisibilityExited = useSharedValue(false);
 
-  const handleOnVisibilityEntered = useCallback(() => {
-    if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
-      _hasFiredOnVisibilityEntered.value = true;
-      _hasFiredOnVisibilityExited.value = false;
-      onVisibilityEnter();
-    }
-  }, [
-    _hasFiredOnVisibilityEntered,
-    _hasFiredOnVisibilityExited,
-    onVisibilityEnter,
-  ]);
+  const handleOnVisibilityEntered = useCallback(
+    () => {
+      if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
+        _hasFiredOnVisibilityEntered.value = true;
+        _hasFiredOnVisibilityExited.value = false;
 
-  const handleOnVisibilityExited = useCallback(() => {
-    if (
-      onVisibilityExit &&
-      _hasFiredOnVisibilityEntered.value &&
-      !_hasFiredOnVisibilityExited.value
-    ) {
-      _hasFiredOnVisibilityEntered.value = false;
-      _hasFiredOnVisibilityExited.value = true;
-      onVisibilityExit();
-    }
-  }, [
-    _hasFiredOnVisibilityEntered,
-    _hasFiredOnVisibilityExited,
-    onVisibilityExit,
-  ]);
+        if (_visibilityBailoutConfig.value.onVisibilityEnter) {
+          _shouldMeasurePercentVisible.value = false;
+        }
+
+        onVisibilityEnter();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+    [onVisibilityEnter]
+  );
+
+  const handleOnVisibilityExited = useCallback(
+    () => {
+      if (
+        onVisibilityExit &&
+        _hasFiredOnVisibilityEntered.value &&
+        !_hasFiredOnVisibilityExited.value
+      ) {
+        _hasFiredOnVisibilityEntered.value = false;
+        _hasFiredOnVisibilityExited.value = true;
+
+        if (_visibilityBailoutConfig.value.onVisibilityExit) {
+          _shouldFireVisibilityExit.value = false;
+        }
+
+        onVisibilityExit();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+    [onVisibilityExit]
+  );
 
   const isVisible = useDerivedValue(() => {
     if (_WORKLET) {
