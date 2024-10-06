@@ -15,8 +15,10 @@ export const ALBUMS = [
   require('../assets/albums/trendkill.jpg'),
   require('../assets/albums/wysiatwin.jpg'),
   require('../assets/albums/youre-welcome.jpeg'),
-  null,
-  null,
+  'no-lazy',
+  'no-lazy',
+  'fire-once',
+  'fire-once',
 ];
 
 export const SHUFFLED_ALBUMS = shuffle(ALBUMS);
@@ -24,3 +26,11 @@ export const SHUFFLED_ALBUMS = shuffle(ALBUMS);
 export const PADDING_VERTICAL = 64;
 
 export const SQUARE_SIZE = Math.floor(Dimensions.get('window').width * 0.5);
+
+export const BLOCK_COLORS = [
+  '#f8a5c2',
+  '#f5cd79',
+  '#ff7f50',
+  '#7bed9f',
+  '#1e90ff',
+];
