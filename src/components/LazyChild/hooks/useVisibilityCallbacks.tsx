@@ -18,10 +18,6 @@ interface Props {
   _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topYValue: Animated.SharedValue<number>;
   bottomYValue: Animated.SharedValue<number>;
-  _visibilityBailoutConfig: Animated.SharedValue<{
-    onVisibilityEnter: boolean;
-    onVisibilityExit: boolean;
-  }>;
 }
 
 export const useVisibilityCallbacks = ({
@@ -35,7 +31,6 @@ export const useVisibilityCallbacks = ({
   _shouldFireEnterOnMount,
   topYValue,
   bottomYValue,
-  _visibilityBailoutConfig,
 }: Props) => {
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
@@ -47,7 +42,7 @@ export const useVisibilityCallbacks = ({
         _hasFiredOnVisibilityEntered.value = true;
         _hasFiredOnVisibilityExited.value = false;
 
-        if (_visibilityBailoutConfig.value.onVisibilityEnter) {
+        if (!_shouldFireVisibilityExit.value) {
           _shouldMeasurePercentVisible.value = false;
         }
 
@@ -67,10 +62,6 @@ export const useVisibilityCallbacks = ({
       ) {
         _hasFiredOnVisibilityEntered.value = false;
         _hasFiredOnVisibilityExited.value = true;
-
-        if (_visibilityBailoutConfig.value.onVisibilityExit) {
-          _shouldFireVisibilityExit.value = false;
-        }
 
         onVisibilityExit();
       }
