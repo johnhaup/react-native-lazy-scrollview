@@ -17,7 +17,6 @@ export const useEnteringCallbacks = ({
   _shouldFireEnterOnMount,
   topTriggerValue,
   bottomTriggerValue,
-  _enteringBailoutConfig,
 }: {
   onEnterThresholdPass?: () => void;
   onExitThresholdPass?: () => void;
@@ -28,10 +27,6 @@ export const useEnteringCallbacks = ({
   _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
   topTriggerValue: Animated.SharedValue<number>;
   bottomTriggerValue: Animated.SharedValue<number>;
-  _enteringBailoutConfig: Animated.SharedValue<{
-    onEnterThresholdPass: boolean;
-    onExitThresholdPass: boolean;
-  }>;
 }) => {
   const _hasFiredThresholdEntered = useSharedValue(false);
   const _hasFiredThresholdExited = useSharedValue(false);
@@ -41,7 +36,7 @@ export const useEnteringCallbacks = ({
       _hasFiredThresholdEntered.value = true;
       _hasFiredThresholdExited.value = false;
 
-      if (_enteringBailoutConfig.value.onEnterThresholdPass) {
+      if (!_shouldFireThresholdExit.value) {
         _shouldFireThresholdEnter.value = false;
       }
 
@@ -58,10 +53,6 @@ export const useEnteringCallbacks = ({
     ) {
       _hasFiredThresholdEntered.value = false;
       _hasFiredThresholdExited.value = true;
-
-      if (_enteringBailoutConfig.value.onExitThresholdPass) {
-        _shouldFireThresholdExit.value = false;
-      }
 
       onExitThresholdPass();
     }

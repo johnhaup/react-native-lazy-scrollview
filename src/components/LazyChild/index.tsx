@@ -16,18 +16,22 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 export interface LazyChildCallbacks {
   /**
    * Callback to fire when the LazyChild passes the LazyScrollView's offset after being offscreen
+   * - Note: This will only fire once and stop measuring if onExitThresholdPass is not provided.
    */
   onEnterThresholdPass?: () => void;
   /**
    * Callback to fire when the LazyChild passes the LazyScrollView's offset after being onscreen
+   * - Note: This will not fire if onEnterThresholdPass has not fired.
    */
   onExitThresholdPass?: () => void;
   /**
    * Callback to fire when the LazyChild's viewable area exceeds the percentVisibleThreshold.
+   * - Note: This will only fire once and stop measuring if onVisibilityExit is not provided.
    */
   onVisibilityEnter?: () => void;
   /**
    * Callback to fire when the LazyChild's viewable area goes under the percentVisibleThreshold after being above it.
+   * - Note: This will not fire if onVisibilityEnter has not fired.
    */
   onVisibilityExit?: () => void;
 }
@@ -47,10 +51,6 @@ export interface LazyChildProps extends LazyChildCallbacks {
    * @defaultValue true
    */
   ignoreZeroMeasurement?: boolean;
-  /**
-   * Setting true for a function will prevent the function from firing more than once.  If all provided functions have a bailout config set to true and the functions have fired, the LazyChild will not measure or react to scroll events.  Recommended if you just need to fire something once.
-   */
-  bailoutConfig?: { [K in keyof LazyChildCallbacks]: boolean | undefined };
 }
 
 export function LazyChild({
@@ -61,7 +61,6 @@ export function LazyChild({
   ignoreZeroMeasurement = true,
   onVisibilityEnter,
   onVisibilityExit,
-  bailoutConfig,
 }: LazyChildProps) {
   const {
     _hasProvider,
@@ -101,18 +100,7 @@ export function LazyChild({
   const _shouldFireVisibilityExit = useSharedValue(
     typeof onVisibilityExit === 'function'
   );
-  const _enteringBailoutConfig = useSharedValue({
-    onEnterThresholdPass: bailoutConfig?.onEnterThresholdPass ?? false,
-    onExitThresholdPass: bailoutConfig?.onExitThresholdPass ?? false,
-  });
-  const _visibilityBailoutConfig = useSharedValue({
-    onVisibilityEnter: bailoutConfig?.onVisibilityEnter ?? false,
-    onVisibilityExit: bailoutConfig?.onVisibilityExit ?? false,
-  });
 
-  /**
-   * At least one callback is a function.
-   */
   const _shouldMeasure = useDerivedValue(
     () =>
       _hasProvider.value &&
@@ -154,7 +142,6 @@ export function LazyChild({
     _shouldFireEnterOnMount,
     topTriggerValue,
     bottomTriggerValue,
-    _enteringBailoutConfig,
   });
 
   useVisibilityCallbacks({
@@ -168,7 +155,6 @@ export function LazyChild({
     _shouldFireEnterOnMount,
     topYValue,
     bottomYValue,
-    _visibilityBailoutConfig,
   });
 
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
