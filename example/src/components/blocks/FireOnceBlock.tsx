@@ -1,20 +1,11 @@
-import React, { ComponentProps, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { ComponentProps, useMemo, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { SQUARE_SIZE } from '../../constants';
 
-interface Props extends Omit<ComponentProps<typeof LazyChild>, 'children'> {
-  source: ImageSourcePropType;
-}
-
-export function ImageBlock({ source, ...rest }: Props) {
+export function FireOnceBlock(
+  props: Omit<ComponentProps<typeof LazyChild>, 'children'>
+) {
   const [triggered, setTriggered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -22,36 +13,36 @@ export function ImageBlock({ source, ...rest }: Props) {
     setTriggered(true);
   };
 
-  const onExitThresholdPass = () => {
-    setTriggered(false);
-  };
-
   const onVisibilityEnter = () => {
     setIsVisible(true);
   };
 
-  const onVisibilityExit = () => {
-    setIsVisible(false);
-  };
+  const backgroundColor = useMemo(
+    () => (triggered ? '#f8a5c2' : '#d1d8e0'),
+    [triggered]
+  );
 
   return (
     <LazyChild
       onEnterThresholdPass={onEnterThresholdPass}
-      onExitThresholdPass={onExitThresholdPass}
       onVisibilityEnter={onVisibilityEnter}
-      onVisibilityExit={onVisibilityExit}
-      {...rest}
+      {...props}
     >
       <View style={styles.container}>
         {triggered ? (
-          <Image source={source} style={styles.image} />
+          <View style={[styles.container, { backgroundColor }]}>
+            <Text style={styles.text}>
+              I didn't provide exit functions so my entering callbacks fire only
+              once, then measurement stops 🤯
+            </Text>
+          </View>
         ) : (
           <ActivityIndicator />
         )}
-        {!isVisible && rest.percentVisibleThreshold ? (
+        {!isVisible && props.percentVisibleThreshold ? (
           <View style={styles.percentTextWrapper}>
             <Text style={styles.percentText}>{`${
-              rest.percentVisibleThreshold * 100
+              props.percentVisibleThreshold * 100
             } not visible`}</Text>
           </View>
         ) : null}
@@ -65,10 +56,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    backgroundColor: '#d1d8e0',
     alignSelf: 'center',
     width: SQUARE_SIZE,
     height: SQUARE_SIZE,
+    padding: 16,
   },
   image: {
     width: SQUARE_SIZE,
@@ -89,5 +80,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 8,
     textAlign: 'center',
+  },
+  text: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: 'white',
   },
 });
