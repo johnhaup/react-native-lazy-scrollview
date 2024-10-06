@@ -18,6 +18,7 @@ Example: Say you have some components lower in your scoll that make expensive ap
 #### Notes
 
 - If a `LazyChild` does not have a `LazyScrollview` ancestor, it will fire its `onEnterThresholdPass` and `onVisibilityEnter` on mount.
+- If a corresponding 'exit' callback is not provided for an 'enter' callback, after the 'enter' callback fires, measuring stops for that callback.
 - `scrollEventThrottle` defaults to 16.
 
 #### ⚠️ Limitations
