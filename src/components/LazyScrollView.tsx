@@ -12,6 +12,8 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import Animated, {
+  measure,
+  runOnUI,
   useAnimatedRef,
   useDerivedValue,
   useScrollViewOffset,
@@ -54,6 +56,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const _containerHeight = useSharedValue(0);
     const _contentHeight = useSharedValue(0);
     const _hasProvider = useSharedValue(true);
+    const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
 
     useImperativeHandle(ref, () => ({
       scrollTo: (options) => {
@@ -76,7 +79,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
      */
     const scrollValue = useScrollViewOffset(_scrollRef);
 
-    const topYValue = useSharedValue(0);
+    const topYValue = useSharedValue(StatusBar.currentHeight || 0);
     const bottomYValue = useDerivedValue(
       () => _containerHeight.value + topYValue.value
     );
@@ -91,12 +94,12 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const onLayout = useCallback(
       (e: LayoutChangeEvent) => {
         _containerHeight.value = e.nativeEvent.layout.height;
-        _wrapperRef.current?.measureInWindow(
-          (_: number, y: number, _2: number, height: number) => {
-            topYValue.value = y + (StatusBar.currentHeight || 0);
-            _contentHeight.value = height;
+        runOnUI(() => {
+          const measurement = measure(_scrollRef);
+          if (measurement) {
+            topYValue.value = measurement.pageY + _statusBarHeight.value;
           }
-        );
+        })();
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
