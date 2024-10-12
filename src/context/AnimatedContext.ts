@@ -7,6 +7,7 @@ const initialContext = {
   containerEnd: { value: 0 },
   startTrigger: { value: 0 },
   endTrigger: { value: 0 },
+  horizontal: { value: false },
 };
 
 export const AnimatedContext = createContext(initialContext);

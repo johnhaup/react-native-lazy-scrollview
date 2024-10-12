@@ -57,6 +57,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const _containerHeight = useSharedValue(0);
     const _contentHeight = useSharedValue(0);
     const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
+    const horizontal = useSharedValue(!!rest.horizontal);
 
     useImperativeHandle(ref, () => ({
       scrollTo: (options) => {
@@ -132,6 +133,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
         containerEnd,
         startTrigger,
         endTrigger,
+        horizontal,
       }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
@@ -139,7 +141,6 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     return (
       <Animated.ScrollView
-        horizontal={false}
         scrollEventThrottle={16}
         {...rest}
         ref={_scrollRef}
