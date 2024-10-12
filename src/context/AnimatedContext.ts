@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
 const initialContext = {
-  _hasProvider: { value: false },
+  _hasProvider: false,
   scrollValue: { value: 0 },
   topYValue: { value: 0 },
   bottomYValue: { value: 0 },

@@ -3,6 +3,7 @@ import React, {
   forwardRef,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from 'react';
 import {
@@ -55,7 +56,6 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const _offset = useSharedValue(injectedOffset || 0);
     const _containerHeight = useSharedValue(0);
     const _contentHeight = useSharedValue(0);
-    const _hasProvider = useSharedValue(true);
     const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
 
     useImperativeHandle(ref, () => ({
@@ -91,24 +91,47 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
       () => bottomYValue.value + _offset.value
     );
 
-    const onLayout = useCallback(
+    const measureScrollView = useCallback(
       (e: LayoutChangeEvent) => {
         _containerHeight.value = e.nativeEvent.layout.height;
-        runOnUI(() => {
-          const measurement = measure(_scrollRef);
-          if (measurement) {
-            topYValue.value = measurement.pageY + _statusBarHeight.value;
-          }
-        })();
+        try {
+          // @ts-ignore measureInWindow is available on the direct ref
+          // Add failure fallback because incorrect typings scare me
+          _scrollRef.current?.measureInWindow((_: number, y: number) => {
+            topYValue.value = y + _statusBarHeight.value;
+          });
+        } catch (err) {
+          setTimeout(() => {
+            runOnUI(() => {
+              const measurement = measure(_scrollRef);
+              if (measurement) {
+                topYValue.value = measurement.pageY + _statusBarHeight.value;
+              }
+            })();
+          }, 25);
+        }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
     );
 
-    const onContentContainerLayout = useCallback(
+    const measureContent = useCallback(
       (e: LayoutChangeEvent) => {
         _contentHeight.value = e.nativeEvent.layout.height;
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+      []
+    );
+
+    const value = useMemo(
+      () => ({
+        _hasProvider: true,
+        scrollValue,
+        topYValue,
+        bottomYValue,
+        topTriggerValue,
+        bottomTriggerValue,
+      }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
     );
@@ -119,19 +142,10 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
         scrollEventThrottle={16}
         {...rest}
         ref={_scrollRef}
-        onLayout={onLayout}
+        onLayout={measureScrollView}
       >
-        <AnimatedContext.Provider
-          value={{
-            _hasProvider,
-            scrollValue,
-            topYValue,
-            bottomYValue,
-            topTriggerValue,
-            bottomTriggerValue,
-          }}
-        >
-          <View ref={_wrapperRef} onLayout={onContentContainerLayout}>
+        <AnimatedContext.Provider value={value}>
+          <View ref={_wrapperRef} onLayout={measureContent}>
             {children}
           </View>
         </AnimatedContext.Provider>
