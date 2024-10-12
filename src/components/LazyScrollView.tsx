@@ -84,10 +84,10 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
       () => _containerHeight.value + containerStart.value
     );
 
-    const topTriggerValue = useDerivedValue(
+    const startTrigger = useDerivedValue(
       () => containerStart.value - _offset.value
     );
-    const bottomTriggerValue = useDerivedValue(
+    const endTrigger = useDerivedValue(
       () => containerEnd.value + _offset.value
     );
 
@@ -130,8 +130,8 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
         scrollValue,
         containerStart,
         containerEnd,
-        topTriggerValue,
-        bottomTriggerValue,
+        startTrigger,
+        endTrigger,
       }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
