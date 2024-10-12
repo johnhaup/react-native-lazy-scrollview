@@ -79,16 +79,16 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
      */
     const scrollValue = useScrollViewOffset(_scrollRef);
 
-    const topYValue = useSharedValue(StatusBar.currentHeight || 0);
-    const bottomYValue = useDerivedValue(
-      () => _containerHeight.value + topYValue.value
+    const containerStart = useSharedValue(StatusBar.currentHeight || 0);
+    const containerEnd = useDerivedValue(
+      () => _containerHeight.value + containerStart.value
     );
 
     const topTriggerValue = useDerivedValue(
-      () => topYValue.value - _offset.value
+      () => containerStart.value - _offset.value
     );
     const bottomTriggerValue = useDerivedValue(
-      () => bottomYValue.value + _offset.value
+      () => containerEnd.value + _offset.value
     );
 
     const measureScrollView = useCallback(
@@ -98,14 +98,15 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
           // @ts-ignore measureInWindow is available on the direct ref
           // Add failure fallback because incorrect typings scare me
           _scrollRef.current?.measureInWindow((_: number, y: number) => {
-            topYValue.value = y + _statusBarHeight.value;
+            containerStart.value = y + _statusBarHeight.value;
           });
         } catch (err) {
           setTimeout(() => {
             runOnUI(() => {
               const measurement = measure(_scrollRef);
               if (measurement) {
-                topYValue.value = measurement.pageY + _statusBarHeight.value;
+                containerStart.value =
+                  measurement.pageY + _statusBarHeight.value;
               }
             })();
           }, 25);
@@ -127,8 +128,8 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
       () => ({
         _hasProvider: true,
         scrollValue,
-        topYValue,
-        bottomYValue,
+        containerStart,
+        containerEnd,
         topTriggerValue,
         bottomTriggerValue,
       }),
