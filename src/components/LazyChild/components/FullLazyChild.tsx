@@ -19,7 +19,6 @@ export function FullLazyChild({
   onEnterThresholdPass,
   onExitThresholdPass,
   percentVisibleThreshold = 1,
-  ignoreZeroMeasurement = true,
   onVisibilityEnter,
   onVisibilityExit,
 }: LazyChildProps) {
@@ -40,10 +39,6 @@ export function FullLazyChild({
    * LazyChild view ref.
    */
   const _viewRef = useAnimatedRef<Animated.View>();
-  /**
-   * Ignore zero measurement.  Set by consumer.
-   */
-  const _ignoreZeroMeasurement = useSharedValue(ignoreZeroMeasurement);
   /**
    * Latest measure return.
    */
@@ -94,7 +89,6 @@ export function FullLazyChild({
     onEnterThresholdPass,
     onExitThresholdPass,
     _measurement,
-    _ignoreZeroMeasurement,
     _shouldFireThresholdEnter,
     _shouldFireThresholdExit,
     startTrigger,
@@ -109,7 +103,6 @@ export function FullLazyChild({
     _shouldMeasurePercentVisible,
     _shouldFireVisibilityExit,
     _measurement,
-    _ignoreZeroMeasurement,
     containerStart,
     containerEnd,
     horizontal,

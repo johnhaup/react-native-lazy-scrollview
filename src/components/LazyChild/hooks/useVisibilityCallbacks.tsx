@@ -15,7 +15,6 @@ interface Props {
   _shouldMeasurePercentVisible: SharedValue<boolean>;
   _shouldFireVisibilityExit: SharedValue<boolean>;
   _measurement: SharedValue<ReturnType<typeof measure>>;
-  _ignoreZeroMeasurement: SharedValue<boolean>;
   containerStart: Pick<SharedValue<number>, 'value'>;
   containerEnd: Pick<SharedValue<number>, 'value'>;
   horizontal: Pick<SharedValue<boolean>, 'value'>;
@@ -28,7 +27,6 @@ export const useVisibilityCallbacks = ({
   _shouldMeasurePercentVisible,
   _shouldFireVisibilityExit,
   _measurement,
-  _ignoreZeroMeasurement,
   containerStart,
   containerEnd,
   horizontal,
@@ -76,10 +74,6 @@ export const useVisibilityCallbacks = ({
       const { pageX, pageY, width, height } = _measurement.value;
       const startOfView = horizontal.value ? pageX : pageY;
       const endOfView = startOfView + (horizontal.value ? width : height);
-
-      if (_ignoreZeroMeasurement.value && startOfView === 0) {
-        return false;
-      }
 
       const visibilitySize = height * _percentVisibleTrigger.value;
       const visibleEnterTrigger = containerEnd.value - visibilitySize;
