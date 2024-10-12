@@ -24,8 +24,8 @@ export function FullLazyChild({
   onVisibilityExit,
 }: LazyChildProps) {
   const {
-    topTriggerValue,
-    bottomTriggerValue,
+    startTrigger,
+    endTrigger,
     scrollValue,
     containerStart,
     containerEnd,
@@ -96,8 +96,8 @@ export function FullLazyChild({
     _ignoreZeroMeasurement,
     _shouldFireThresholdEnter,
     _shouldFireThresholdExit,
-    topTriggerValue,
-    bottomTriggerValue,
+    startTrigger,
+    endTrigger,
   });
 
   useVisibilityCallbacks({

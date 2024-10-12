@@ -15,8 +15,8 @@ export const useEnteringCallbacks = ({
   _ignoreZeroMeasurement,
   _shouldFireThresholdEnter,
   _shouldFireThresholdExit,
-  topTriggerValue,
-  bottomTriggerValue,
+  startTrigger,
+  endTrigger,
 }: {
   onEnterThresholdPass?: () => void;
   onExitThresholdPass?: () => void;
@@ -24,8 +24,8 @@ export const useEnteringCallbacks = ({
   _ignoreZeroMeasurement: SharedValue<boolean>;
   _shouldFireThresholdEnter: SharedValue<boolean>;
   _shouldFireThresholdExit: SharedValue<boolean>;
-  topTriggerValue: Pick<SharedValue<number>, 'value'>;
-  bottomTriggerValue: Pick<SharedValue<number>, 'value'>;
+  startTrigger: Pick<SharedValue<number>, 'value'>;
+  endTrigger: Pick<SharedValue<number>, 'value'>;
 }) => {
   const _hasFiredThresholdEntered = useSharedValue(false);
   const _hasFiredThresholdExited = useSharedValue(false);
@@ -68,8 +68,7 @@ export const useEnteringCallbacks = ({
       }
 
       const result =
-        topOfView < bottomTriggerValue.value &&
-        bottomOfView > topTriggerValue.value;
+        topOfView < endTrigger.value && bottomOfView > startTrigger.value;
 
       return result;
     }
