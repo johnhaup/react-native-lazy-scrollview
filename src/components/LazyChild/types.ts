@@ -31,9 +31,4 @@ export interface LazyChildProps extends LazyChildCallbacks {
    * @defaultValue 1.0
    */
   percentVisibleThreshold?: number;
-  /**
-   * Protects against firing callback on measurement with zero value.  Good to set to false if you know the LazyChild is the first item in the LazyScrollview.
-   * @defaultValue true
-   */
-  ignoreZeroMeasurement?: boolean;
 }
