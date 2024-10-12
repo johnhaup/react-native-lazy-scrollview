@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import Animated, {
+import {
+  SharedValue,
   measure,
   runOnJS,
   useAnimatedReaction,
@@ -14,19 +15,17 @@ export const useEnteringCallbacks = ({
   _ignoreZeroMeasurement,
   _shouldFireThresholdEnter,
   _shouldFireThresholdExit,
-  _shouldFireEnterOnMount,
   topTriggerValue,
   bottomTriggerValue,
 }: {
   onEnterThresholdPass?: () => void;
   onExitThresholdPass?: () => void;
-  _measurement: Animated.SharedValue<ReturnType<typeof measure>>;
-  _ignoreZeroMeasurement: Animated.SharedValue<boolean>;
-  _shouldFireThresholdEnter: Animated.SharedValue<boolean>;
-  _shouldFireThresholdExit: Animated.SharedValue<boolean>;
-  _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
-  topTriggerValue: Animated.SharedValue<number>;
-  bottomTriggerValue: Animated.SharedValue<number>;
+  _measurement: SharedValue<ReturnType<typeof measure>>;
+  _ignoreZeroMeasurement: SharedValue<boolean>;
+  _shouldFireThresholdEnter: SharedValue<boolean>;
+  _shouldFireThresholdExit: SharedValue<boolean>;
+  topTriggerValue: Pick<SharedValue<number>, 'value'>;
+  bottomTriggerValue: Pick<SharedValue<number>, 'value'>;
 }) => {
   const _hasFiredThresholdEntered = useSharedValue(false);
   const _hasFiredThresholdExited = useSharedValue(false);
@@ -60,29 +59,26 @@ export const useEnteringCallbacks = ({
   }, [onExitThresholdPass]);
 
   const isEntering = useDerivedValue(() => {
-    if (_WORKLET) {
-      if (_measurement.value !== null) {
-        const topOfView = _measurement.value.pageY;
-        const bottomOfView =
-          _measurement.value.pageY + _measurement.value.height;
+    if (_measurement.value !== null) {
+      const topOfView = _measurement.value.pageY;
+      const bottomOfView = _measurement.value.pageY + _measurement.value.height;
 
-        if (_ignoreZeroMeasurement.value && topOfView === 0) {
-          return false;
-        }
-
-        const result =
-          topOfView < bottomTriggerValue.value &&
-          bottomOfView > topTriggerValue.value;
-
-        return result;
+      if (_ignoreZeroMeasurement.value && topOfView === 0) {
+        return false;
       }
+
+      const result =
+        topOfView < bottomTriggerValue.value &&
+        bottomOfView > topTriggerValue.value;
+
+      return result;
     }
 
     return false;
   });
 
   useAnimatedReaction(
-    () => isEntering.value || _shouldFireEnterOnMount.value,
+    () => isEntering.value,
     (hasLazyChildEntered) => {
       if (hasLazyChildEntered) {
         if (_shouldFireThresholdEnter.value) {

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import Animated, {
+import {
+  SharedValue,
   measure,
   runOnJS,
   useAnimatedReaction,
@@ -11,13 +12,12 @@ interface Props {
   percentVisibleThreshold: number;
   onVisibilityEnter?: () => void;
   onVisibilityExit?: () => void;
-  _shouldMeasurePercentVisible: Animated.SharedValue<boolean>;
-  _shouldFireVisibilityExit: Animated.SharedValue<boolean>;
-  _measurement: Animated.SharedValue<ReturnType<typeof measure>>;
-  _ignoreZeroMeasurement: Animated.SharedValue<boolean>;
-  _shouldFireEnterOnMount: Animated.SharedValue<boolean>;
-  topYValue: Animated.SharedValue<number>;
-  bottomYValue: Animated.SharedValue<number>;
+  _shouldMeasurePercentVisible: SharedValue<boolean>;
+  _shouldFireVisibilityExit: SharedValue<boolean>;
+  _measurement: SharedValue<ReturnType<typeof measure>>;
+  _ignoreZeroMeasurement: SharedValue<boolean>;
+  topYValue: Pick<SharedValue<number>, 'value'>;
+  bottomYValue: Pick<SharedValue<number>, 'value'>;
 }
 
 export const useVisibilityCallbacks = ({
@@ -28,7 +28,6 @@ export const useVisibilityCallbacks = ({
   _shouldFireVisibilityExit,
   _measurement,
   _ignoreZeroMeasurement,
-  _shouldFireEnterOnMount,
   topYValue,
   bottomYValue,
 }: Props) => {
@@ -71,36 +70,33 @@ export const useVisibilityCallbacks = ({
   );
 
   const isVisible = useDerivedValue(() => {
-    if (_WORKLET) {
-      if (_measurement.value !== null) {
-        const topOfView = _measurement.value.pageY;
-        const bottomOfView =
-          _measurement.value.pageY + _measurement.value.height;
+    if (_measurement.value !== null) {
+      const topOfView = _measurement.value.pageY;
+      const bottomOfView = _measurement.value.pageY + _measurement.value.height;
 
-        if (_ignoreZeroMeasurement.value && topOfView === 0) {
-          return false;
-        }
-
-        const visibilityHeight =
-          _measurement.value.height * _percentVisibleTrigger.value;
-        const visibleEnterTrigger = bottomYValue.value - visibilityHeight;
-        const visibleExitTrigger = topYValue.value + visibilityHeight;
-
-        if (visibleEnterTrigger <= 0) {
-          return false;
-        }
-
-        return (
-          topOfView < visibleEnterTrigger && bottomOfView > visibleExitTrigger
-        );
+      if (_ignoreZeroMeasurement.value && topOfView === 0) {
+        return false;
       }
+
+      const visibilityHeight =
+        _measurement.value.height * _percentVisibleTrigger.value;
+      const visibleEnterTrigger = bottomYValue.value - visibilityHeight;
+      const visibleExitTrigger = topYValue.value + visibilityHeight;
+
+      if (visibleEnterTrigger <= 0) {
+        return false;
+      }
+
+      return (
+        topOfView < visibleEnterTrigger && bottomOfView > visibleExitTrigger
+      );
     }
 
     return false;
   });
 
   useAnimatedReaction(
-    () => isVisible.value || _shouldFireEnterOnMount.value,
+    () => isVisible.value,
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
         if (_shouldMeasurePercentVisible.value) {
