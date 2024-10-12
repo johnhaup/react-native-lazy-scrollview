@@ -54,8 +54,9 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const _scrollRef = useAnimatedRef<Animated.ScrollView>();
     const _wrapperRef = useRef<View>(null);
     const _offset = useSharedValue(injectedOffset || 0);
-    const _containerHeight = useSharedValue(0);
-    const _contentHeight = useSharedValue(0);
+    const _containerDimensions = useSharedValue({ width: 0, height: 0 });
+    const _containerCoordinates = useSharedValue({ x: 0, y: 0 });
+    const _contentDimensions = useSharedValue({ width: 0, height: 0 });
     const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
     const horizontal = useSharedValue(!!rest.horizontal);
 
@@ -80,9 +81,16 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
      */
     const scrollValue = useScrollViewOffset(_scrollRef);
 
-    const containerStart = useSharedValue(StatusBar.currentHeight || 0);
+    const containerStart = useDerivedValue(() =>
+      horizontal.value
+        ? _containerCoordinates.value.x
+        : _containerCoordinates.value.y
+    );
     const containerEnd = useDerivedValue(
-      () => _containerHeight.value + containerStart.value
+      () =>
+        (horizontal.value
+          ? _containerDimensions.value.width
+          : _containerDimensions.value.height) + containerStart.value
     );
 
     const startTrigger = useDerivedValue(
@@ -94,20 +102,25 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     const measureScrollView = useCallback(
       (e: LayoutChangeEvent) => {
-        _containerHeight.value = e.nativeEvent.layout.height;
+        _containerDimensions.value = {
+          height: e.nativeEvent.layout.height,
+          width: e.nativeEvent.layout.width,
+        };
         try {
           // @ts-ignore measureInWindow is available on the direct ref
           // Add failure fallback because incorrect typings scare me
-          _scrollRef.current?.measureInWindow((_: number, y: number) => {
-            containerStart.value = y + _statusBarHeight.value;
+          _scrollRef.current?.measureInWindow((x: number, y: number) => {
+            _containerCoordinates.value = { x, y: y + _statusBarHeight.value };
           });
         } catch (err) {
           setTimeout(() => {
             runOnUI(() => {
               const measurement = measure(_scrollRef);
               if (measurement) {
-                containerStart.value =
-                  measurement.pageY + _statusBarHeight.value;
+                _containerCoordinates.value = {
+                  x: measurement.pageX,
+                  y: measurement.pageY + _statusBarHeight.value,
+                };
               }
             })();
           }, 25);
@@ -119,7 +132,10 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     const measureContent = useCallback(
       (e: LayoutChangeEvent) => {
-        _contentHeight.value = e.nativeEvent.layout.height;
+        _contentDimensions.value = {
+          height: e.nativeEvent.layout.height,
+          width: e.nativeEvent.layout.width,
+        };
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
