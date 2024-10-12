@@ -29,6 +29,7 @@ export function FullLazyChild({
     scrollValue,
     containerStart,
     containerEnd,
+    horizontal,
   } = useAnimatedContext();
 
   /**
@@ -98,6 +99,7 @@ export function FullLazyChild({
     _shouldFireThresholdExit,
     startTrigger,
     endTrigger,
+    horizontal,
   });
 
   useVisibilityCallbacks({
@@ -110,6 +112,7 @@ export function FullLazyChild({
     _ignoreZeroMeasurement,
     containerStart,
     containerEnd,
+    horizontal,
   });
 
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {

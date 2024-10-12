@@ -18,6 +18,7 @@ interface Props {
   _ignoreZeroMeasurement: SharedValue<boolean>;
   containerStart: Pick<SharedValue<number>, 'value'>;
   containerEnd: Pick<SharedValue<number>, 'value'>;
+  horizontal: Pick<SharedValue<boolean>, 'value'>;
 }
 
 export const useVisibilityCallbacks = ({
@@ -30,6 +31,7 @@ export const useVisibilityCallbacks = ({
   _ignoreZeroMeasurement,
   containerStart,
   containerEnd,
+  horizontal,
 }: Props) => {
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
@@ -71,24 +73,24 @@ export const useVisibilityCallbacks = ({
 
   const isVisible = useDerivedValue(() => {
     if (_measurement.value !== null) {
-      const topOfView = _measurement.value.pageY;
-      const bottomOfView = _measurement.value.pageY + _measurement.value.height;
+      const { pageX, pageY, width, height } = _measurement.value;
+      const startOfView = horizontal.value ? pageX : pageY;
+      const endOfView = startOfView + (horizontal.value ? width : height);
 
-      if (_ignoreZeroMeasurement.value && topOfView === 0) {
+      if (_ignoreZeroMeasurement.value && startOfView === 0) {
         return false;
       }
 
-      const visibilityHeight =
-        _measurement.value.height * _percentVisibleTrigger.value;
-      const visibleEnterTrigger = containerEnd.value - visibilityHeight;
-      const visibleExitTrigger = containerStart.value + visibilityHeight;
+      const visibilitySize = height * _percentVisibleTrigger.value;
+      const visibleEnterTrigger = containerEnd.value - visibilitySize;
+      const visibleExitTrigger = containerStart.value + visibilitySize;
 
       if (visibleEnterTrigger <= 0) {
         return false;
       }
 
       return (
-        topOfView < visibleEnterTrigger && bottomOfView > visibleExitTrigger
+        startOfView < visibleEnterTrigger && endOfView > visibleExitTrigger
       );
     }
 
