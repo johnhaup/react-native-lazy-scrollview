@@ -16,8 +16,8 @@ interface Props {
   _shouldFireVisibilityExit: SharedValue<boolean>;
   _measurement: SharedValue<ReturnType<typeof measure>>;
   _ignoreZeroMeasurement: SharedValue<boolean>;
-  topYValue: Pick<SharedValue<number>, 'value'>;
-  bottomYValue: Pick<SharedValue<number>, 'value'>;
+  containerStart: Pick<SharedValue<number>, 'value'>;
+  containerEnd: Pick<SharedValue<number>, 'value'>;
 }
 
 export const useVisibilityCallbacks = ({
@@ -28,8 +28,8 @@ export const useVisibilityCallbacks = ({
   _shouldFireVisibilityExit,
   _measurement,
   _ignoreZeroMeasurement,
-  topYValue,
-  bottomYValue,
+  containerStart,
+  containerEnd,
 }: Props) => {
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
@@ -80,8 +80,8 @@ export const useVisibilityCallbacks = ({
 
       const visibilityHeight =
         _measurement.value.height * _percentVisibleTrigger.value;
-      const visibleEnterTrigger = bottomYValue.value - visibilityHeight;
-      const visibleExitTrigger = topYValue.value + visibilityHeight;
+      const visibleEnterTrigger = containerEnd.value - visibilityHeight;
+      const visibleExitTrigger = containerStart.value + visibilityHeight;
 
       if (visibleEnterTrigger <= 0) {
         return false;
