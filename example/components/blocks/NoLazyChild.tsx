@@ -1,27 +1,34 @@
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SQUARE_SIZE } from '../../constants';
 
 export function NoLazyChild() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        I'm not wrapped in LazyChild so I render right away 😉
-      </Text>
+      <View style={styles.contentContainer}>
+        <Text style={styles.text}>
+          I'm not wrapped in LazyChild so I render right away 😉
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: SQUARE_SIZE,
-    height: SQUARE_SIZE,
-    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
+    width: SQUARE_SIZE,
+    height: SQUARE_SIZE,
+  },
+  contentContainer: {
+    width: SQUARE_SIZE - 16,
+    height: SQUARE_SIZE - 16,
+    backgroundColor: '#ff7f50',
+    borderRadius: 8,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
-    backgroundColor: '#7bed9f',
   },
   text: {
     fontSize: 16,

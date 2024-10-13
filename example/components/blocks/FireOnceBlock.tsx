@@ -1,4 +1,4 @@
-import React, { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { SQUARE_SIZE } from '../../constants';
@@ -23,22 +23,23 @@ export function FireOnceBlock(
   );
 
   return (
-    <LazyChild
-      onEnterThresholdPass={onEnterThresholdPass}
-      onVisibilityEnter={onVisibilityEnter}
-      {...props}
-    >
-      <View style={styles.container}>
-        {triggered ? (
-          <View style={[styles.container, { backgroundColor }]}>
+    <View style={styles.container}>
+      <LazyChild
+        onEnterThresholdPass={onEnterThresholdPass}
+        onVisibilityEnter={onVisibilityEnter}
+        {...props}
+      >
+        <View style={[styles.contentContainer, { backgroundColor }]}>
+          {triggered ? (
             <Text style={styles.text}>
               I didn't provide exit functions so my entering callbacks fire only
               once, then measurement stops 🤯
             </Text>
-          </View>
-        ) : (
-          <ActivityIndicator />
-        )}
+          ) : (
+            <ActivityIndicator />
+          )}
+        </View>
+
         {!isVisible && props.percentVisibleThreshold ? (
           <View style={styles.percentTextWrapper}>
             <Text style={styles.percentText}>{`${
@@ -46,8 +47,8 @@ export function FireOnceBlock(
             } not visible`}</Text>
           </View>
         ) : null}
-      </View>
-    </LazyChild>
+      </LazyChild>
+    </View>
   );
 }
 
@@ -55,15 +56,17 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-    alignSelf: 'center',
     width: SQUARE_SIZE,
     height: SQUARE_SIZE,
-    padding: 16,
   },
-  image: {
-    width: SQUARE_SIZE,
-    height: SQUARE_SIZE,
+  contentContainer: {
+    width: SQUARE_SIZE - 16,
+    height: SQUARE_SIZE - 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
   },
   percentTextWrapper: {
     position: 'absolute',

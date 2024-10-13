@@ -6,11 +6,11 @@ import {
   LazyScrollViewMethods,
 } from 'react-native-lazy-scrollview';
 import { PADDING_VERTICAL } from '../../constants';
-import { BlockColumns } from './BlockColumns';
+import { Blocks } from '../../components/blocks/Blocks';
 
-const OFFSET = -100;
+const OFFSET = -50;
 
-export function VerticalScrollView() {
+export default function HorizontalScrollView() {
   const ref = useRef<LazyScrollViewMethods>(null);
 
   return (
@@ -18,9 +18,10 @@ export function VerticalScrollView() {
       <LazyScrollView
         ref={ref}
         offset={OFFSET}
-        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        horizontal
       >
-        <BlockColumns />
+        <Blocks horizontal />
       </LazyScrollView>
       <View style={styles.arrowsContainer}>
         <TouchableOpacity
@@ -28,17 +29,14 @@ export function VerticalScrollView() {
           activeOpacity={0.7}
           onPress={() => ref.current?.scrollToStart({ animated: true })}
         >
-          <Text style={styles.arrow}>⬆️</Text>
+          <Text style={styles.arrow}>⬅️</Text>
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => ref.current?.scrollToEnd({ animated: true })}
         >
-          <Text style={styles.arrow}>⬇️</Text>
+          <Text style={styles.arrow}>➡️</Text>
         </TouchableOpacity>
-      </View>
-      <View style={styles.offsetBar}>
-        <Text style={styles.offsetText}>{`Offset: ${OFFSET}`}</Text>
       </View>
     </View>
   );
@@ -47,8 +45,7 @@ export function VerticalScrollView() {
 const styles = StyleSheet.create({
   scrollviewContainer: {
     flex: 1,
-    paddingVertical: PADDING_VERTICAL,
-    backgroundColor: '#2d3436',
+    backgroundColor: '#ecf0f1',
   },
   offsetBar: {
     position: 'absolute',
@@ -70,12 +67,13 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   arrowsContainer: {
-    top: 0,
-    bottom: 0,
-    right: 0,
+    top: 8,
+    right: 8,
     position: 'absolute',
     justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
   },
-  arrowButton: { marginBottom: 8 },
+  arrowButton: {},
   arrow: { fontSize: 32 },
 });

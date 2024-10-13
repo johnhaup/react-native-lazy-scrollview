@@ -1,4 +1,4 @@
-import React, { ComponentProps, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -35,28 +35,30 @@ export function ImageBlock({ source, ...rest }: Props) {
   };
 
   return (
-    <LazyChild
-      onEnterThresholdPass={onEnterThresholdPass}
-      onExitThresholdPass={onExitThresholdPass}
-      onVisibilityEnter={onVisibilityEnter}
-      onVisibilityExit={onVisibilityExit}
-      {...rest}
-    >
-      <View style={styles.container}>
-        {triggered ? (
-          <Image source={source} style={styles.image} />
-        ) : (
-          <ActivityIndicator />
-        )}
-        {!isVisible && rest.percentVisibleThreshold ? (
-          <View style={styles.percentTextWrapper}>
-            <Text style={styles.percentText}>{`${
-              rest.percentVisibleThreshold * 100
-            } not visible`}</Text>
-          </View>
-        ) : null}
-      </View>
-    </LazyChild>
+    <View style={styles.container}>
+      <LazyChild
+        onEnterThresholdPass={onEnterThresholdPass}
+        onExitThresholdPass={onExitThresholdPass}
+        onVisibilityEnter={onVisibilityEnter}
+        onVisibilityExit={onVisibilityExit}
+        {...rest}
+      >
+        <View style={styles.contentContainer}>
+          {triggered ? (
+            <Image source={source} style={styles.image} />
+          ) : (
+            <ActivityIndicator />
+          )}
+          {!isVisible && rest.percentVisibleThreshold ? (
+            <View style={styles.percentTextWrapper}>
+              <Text style={styles.percentText}>{`${
+                rest.percentVisibleThreshold * 100
+              } not visible`}</Text>
+            </View>
+          ) : null}
+        </View>
+      </LazyChild>
+    </View>
   );
 }
 
@@ -65,14 +67,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    backgroundColor: '#d1d8e0',
     alignSelf: 'center',
     width: SQUARE_SIZE,
     height: SQUARE_SIZE,
   },
+  contentContainer: {
+    width: SQUARE_SIZE - 16,
+    height: SQUARE_SIZE - 16,
+    borderRadius: 8,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   image: {
-    width: SQUARE_SIZE,
-    height: SQUARE_SIZE,
+    width: SQUARE_SIZE - 16,
+    height: SQUARE_SIZE - 16,
+    borderRadius: 8,
   },
   percentTextWrapper: {
     position: 'absolute',
