@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   interpolate,
   useAnimatedStyle,
@@ -14,6 +14,7 @@ export function VerticalCard() {
 
   useEffect(() => {
     animation.value = withRepeat(withTiming(1, { duration: 1000 }), -1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const animatedStyle = useAnimatedStyle(() => {
     return {

@@ -1,5 +1,4 @@
-import { useRef } from 'react';
-
+import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   LazyScrollView,

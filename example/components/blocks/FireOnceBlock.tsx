@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo, useState } from 'react';
+import React, { ComponentProps, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { SQUARE_SIZE } from '../../constants';
