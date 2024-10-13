@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
+  runOnJS,
   runOnUI,
   useAnimatedReaction,
   useAnimatedRef,
@@ -12,8 +13,13 @@ import { useAnimatedContext } from '../../../context/AnimatedContext';
 import { useEnteringCallbacks } from '../hooks/useEnteringCallbacks';
 import { useVisibilityCallbacks } from '../hooks/useVisibilityCallbacks';
 import { LazyChildProps } from '../types';
+import { logger } from '../../../utils/logger';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+const log = (...args: Parameters<typeof console.log>) => {
+  logger.log('<LazyChild>', ...args);
+};
 
 export function FullLazyChild({
   children,
@@ -22,6 +28,7 @@ export function FullLazyChild({
   percentVisibleThreshold = 1,
   onVisibilityEnter,
   onVisibilityExit,
+  debug = false,
 }: LazyChildProps) {
   const {
     startTrigger,
@@ -44,6 +51,8 @@ export function FullLazyChild({
    * Latest valid measure return or null.
    */
   const _measurement = useSharedValue<ReturnType<typeof measure>>(null);
+
+  const _debug = useSharedValue(debug);
 
   const _shouldFireThresholdEnter = useSharedValue(
     typeof onEnterThresholdPass === 'function'
@@ -70,6 +79,10 @@ export function FullLazyChild({
     'worklet';
     const measurement = measure(_viewRef);
 
+    if (_debug.value) {
+      runOnJS(log)('measurement:', measurement);
+    }
+
     if (measurement && (measurement?.height || measurement?.width)) {
       _measurement.value = measurement;
     }
@@ -85,6 +98,10 @@ export function FullLazyChild({
       );
     },
     (shouldMeasure) => {
+      if (_debug.value) {
+        runOnJS(log)('shouldMeasure:', shouldMeasure);
+      }
+
       if (shouldMeasure) {
         measureView();
       }

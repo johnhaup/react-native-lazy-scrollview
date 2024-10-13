@@ -18,6 +18,7 @@ export default function VerticalScrollView() {
         ref={ref}
         offset={OFFSET}
         showsVerticalScrollIndicator={false}
+        debug
       >
         <Blocks />
       </LazyScrollView>

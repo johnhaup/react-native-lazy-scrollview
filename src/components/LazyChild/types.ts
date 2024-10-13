@@ -31,4 +31,8 @@ export interface LazyChildProps extends LazyChildCallbacks {
    * @defaultValue 1.0
    */
   percentVisibleThreshold?: number;
+  /**
+   * When true, console.logs LazyChilds measurement data.  Even if true, will not call console.log in production.
+   */
+  debug?: boolean;
 }

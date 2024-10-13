@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Animated, {
   measure,
+  runOnJS,
   runOnUI,
   useAnimatedRef,
   useDerivedValue,
@@ -21,6 +22,11 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
+import { logger } from '../utils/logger';
+
+const log = (...args: Parameters<typeof console.log>) => {
+  logger.log('<LazyScrollView>', ...args);
+};
 
 export interface LazyScrollViewMethods {
   scrollTo: typeof ScrollView.prototype.scrollTo;
@@ -38,6 +44,10 @@ export interface LazyScrollViewProps {
    * Ref to the LazyScrollView.  Exposes scrollTo, scrollToStart, and scrollToEnd methods.
    */
   ref?: MutableRefObject<LazyScrollViewMethods>;
+  /**
+   * When true, console.logs scrollview measurements.  Even if true, will not call console.log in production.
+   */
+  debug?: boolean;
 }
 
 type Props = LazyScrollViewProps &
@@ -50,7 +60,7 @@ type Props = LazyScrollViewProps &
  * ScrollView to wrap Lazy Children in.
  */
 const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
-  ({ children, offset: injectedOffset, ...rest }, ref) => {
+  ({ children, offset: injectedOffset, debug = false, ...rest }, ref) => {
     const _scrollRef = useAnimatedRef<Animated.ScrollView>();
     const _wrapperRef = useRef<View>(null);
     const _offset = useSharedValue(injectedOffset || 0);
@@ -58,6 +68,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
     const _containerCoordinates = useSharedValue({ x: 0, y: 0 });
     const _contentDimensions = useSharedValue({ width: 0, height: 0 });
     const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
+    const _debug = useSharedValue(debug);
     const horizontal = useSharedValue(!!rest.horizontal);
 
     useImperativeHandle(ref, () => ({
@@ -107,6 +118,13 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
           width: e.nativeEvent.layout.width,
         };
 
+        if (debug) {
+          log('dimensions:', {
+            height: _containerDimensions.value.height,
+            width: _containerDimensions.value.width,
+          });
+        }
+
         // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
         requestAnimationFrame(() => {
           runOnUI(() => {
@@ -114,10 +132,16 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
             const measurement = measure(_scrollRef);
 
             if (measurement) {
-              _containerCoordinates.value = {
+              const coordinates = {
                 x: measurement.pageX,
                 y: measurement.pageY + _statusBarHeight.value,
               };
+
+              if (_debug.value) {
+                runOnJS(log)('coordinates:', coordinates);
+              }
+
+              _containerCoordinates.value = coordinates;
             }
           })();
         });
@@ -128,10 +152,16 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     const measureContent = useCallback(
       (e: LayoutChangeEvent) => {
-        _contentDimensions.value = {
+        const dimensions = {
           height: e.nativeEvent.layout.height,
           width: e.nativeEvent.layout.width,
         };
+
+        if (debug) {
+          log('content dimensions:', dimensions);
+        }
+
+        _contentDimensions.value = dimensions;
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []

@@ -29,6 +29,7 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
           <FireOnceBlock
             key={`fire-once-child-${index}`}
             percentVisibleThreshold={1}
+            debug
           />
         );
       }
@@ -38,6 +39,7 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
           key={`${source.toString()}-${index}`}
           source={source}
           percentVisibleThreshold={1}
+          debug
         />
       );
     },

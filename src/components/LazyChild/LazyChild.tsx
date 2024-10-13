@@ -12,6 +12,7 @@ export const LazyChild = function (props: LazyChildProps) {
       <BareLazyChild
         onEnterThresholdPass={props.onEnterThresholdPass}
         onVisibilityEnter={props.onVisibilityEnter}
+        debug={props.debug}
       >
         {props.children}
       </BareLazyChild>
