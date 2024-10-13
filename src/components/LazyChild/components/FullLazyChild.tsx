@@ -12,7 +12,6 @@ import { useAnimatedContext } from '../../../context/AnimatedContext';
 import { useEnteringCallbacks } from '../hooks/useEnteringCallbacks';
 import { useVisibilityCallbacks } from '../hooks/useVisibilityCallbacks';
 import { LazyChildProps } from '../types';
-import { FRAME_MS } from '../../../constants';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -34,15 +33,15 @@ export function FullLazyChild({
   } = useAnimatedContext();
 
   /**
-   * If onLayout returns a height value greater than 0.
+   * If onLayout returns a height or width value greater than 0.
    */
-  const _canMeasure = useSharedValue(false);
+  const _isJsLayoutComplete = useSharedValue(false);
   /**
    * LazyChild view ref.
    */
   const _viewRef = useAnimatedRef<Animated.View>();
   /**
-   * Latest measure return.
+   * Latest valid measure return or null.
    */
   const _measurement = useSharedValue<ReturnType<typeof measure>>(null);
 
@@ -59,7 +58,7 @@ export function FullLazyChild({
     typeof onVisibilityExit === 'function'
   );
 
-  const _shouldMeasure = useDerivedValue(
+  const _hasValidCallback = useDerivedValue(
     () =>
       _shouldFireThresholdEnter.value ||
       _shouldFireThresholdExit.value ||
@@ -67,24 +66,27 @@ export function FullLazyChild({
       _shouldFireVisibilityExit.value
   );
 
+  function measureView() {
+    'worklet';
+    const measurement = measure(_viewRef);
+
+    if (measurement && (measurement?.height || measurement?.width)) {
+      _measurement.value = measurement;
+    }
+  }
+
   useAnimatedReaction(
     () => {
       // Track scollValue to make reaction fire.  SCREEN_HEIGHT negative is to generously allow for overscroll.
-      if (
-        _canMeasure.value &&
-        _shouldMeasure.value &&
+      return (
+        _isJsLayoutComplete.value &&
+        _hasValidCallback.value &&
         scrollValue.value > -SCREEN_HEIGHT
-      ) {
-        const measurement = measure(_viewRef);
-
-        return measurement;
-      }
-
-      return null;
+      );
     },
-    (measured) => {
-      if (measured?.height || measured?.width) {
-        _measurement.value = measured;
+    (shouldMeasure) => {
+      if (shouldMeasure) {
+        measureView();
       }
     }
   );
@@ -113,19 +115,15 @@ export function FullLazyChild({
   });
 
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-    // Don't measure until we know we have something.  This prevents those pesky Android measurement warnings.
-    // https://github.com/software-mansion/react-native-reanimated/blob/d8ef9c27c31dd2c32d4c3a2111326a448bf19ec9/packages/react-native-reanimated/src/platformFunctions/measure.ts#L95
-    if (nativeEvent.layout.height > 0) {
-      _canMeasure.value = true;
-      // Sometimes native measure runs too quick and return 0 on first paint.
-      setTimeout(() => {
+    // Don't measure until we know we have something.
+    if (nativeEvent.layout.height > 0 || nativeEvent.layout.width > 0) {
+      // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
+      requestAnimationFrame(() => {
         runOnUI(() => {
-          const measurement = measure(_viewRef);
-          if (measurement) {
-            _measurement.value = measurement;
-          }
+          'worklet';
+          _isJsLayoutComplete.value = true;
         })();
-      }, FRAME_MS);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
   }, []);

@@ -42,6 +42,7 @@ export const useVisibilityCallbacks = ({
         _hasFiredOnVisibilityExited.value = false;
 
         if (!_shouldFireVisibilityExit.value) {
+          // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
           _shouldMeasurePercentVisible.value = false;
         }
 
@@ -69,7 +70,7 @@ export const useVisibilityCallbacks = ({
     [onVisibilityExit]
   );
 
-  const isVisible = useDerivedValue(() => {
+  const _isVisible = useDerivedValue(() => {
     if (_measurement.value !== null) {
       const { pageX, pageY, width, height } = _measurement.value;
       const startOfView = horizontal.value ? pageX : pageY;
@@ -92,7 +93,7 @@ export const useVisibilityCallbacks = ({
   });
 
   useAnimatedReaction(
-    () => isVisible.value,
+    () => _isVisible.value,
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
         if (_shouldMeasurePercentVisible.value) {

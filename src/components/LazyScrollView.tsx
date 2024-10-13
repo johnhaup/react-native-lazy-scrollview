@@ -21,7 +21,6 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
-import { FRAME_MS } from '../constants';
 
 export interface LazyScrollViewMethods {
   scrollTo: typeof ScrollView.prototype.scrollTo;
@@ -107,25 +106,21 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
           height: e.nativeEvent.layout.height,
           width: e.nativeEvent.layout.width,
         };
-        try {
-          // @ts-ignore measureInWindow is available on the direct ref
-          // Add failure fallback because incorrect typings scare me
-          _scrollRef.current?.measureInWindow((x: number, y: number) => {
-            _containerCoordinates.value = { x, y: y + _statusBarHeight.value };
-          });
-        } catch (err) {
-          setTimeout(() => {
-            runOnUI(() => {
-              const measurement = measure(_scrollRef);
-              if (measurement) {
-                _containerCoordinates.value = {
-                  x: measurement.pageX,
-                  y: measurement.pageY + _statusBarHeight.value,
-                };
-              }
-            })();
-          }, FRAME_MS);
-        }
+
+        // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
+        requestAnimationFrame(() => {
+          runOnUI(() => {
+            'worklet';
+            const measurement = measure(_scrollRef);
+
+            if (measurement) {
+              _containerCoordinates.value = {
+                x: measurement.pageX,
+                y: measurement.pageY + _statusBarHeight.value,
+              };
+            }
+          })();
+        });
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
       []
@@ -158,7 +153,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     return (
       <Animated.ScrollView
-        scrollEventThrottle={FRAME_MS}
+        scrollEventThrottle={16}
         {...rest}
         ref={_scrollRef}
         onLayout={measureScrollView}

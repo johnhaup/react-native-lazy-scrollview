@@ -36,6 +36,7 @@ export const useEnteringCallbacks = ({
       _hasFiredThresholdExited.value = false;
 
       if (!_shouldFireThresholdExit.value) {
+        // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
         _shouldFireThresholdEnter.value = false;
       }
 
@@ -58,7 +59,7 @@ export const useEnteringCallbacks = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
   }, [onExitThresholdPass]);
 
-  const isEntering = useDerivedValue(() => {
+  const _hasEntered = useDerivedValue(() => {
     if (_measurement.value !== null) {
       const { pageX, pageY, width, height } = _measurement.value;
       const startOfView = horizontal.value ? pageX : pageY;
@@ -74,7 +75,7 @@ export const useEnteringCallbacks = ({
   });
 
   useAnimatedReaction(
-    () => isEntering.value,
+    () => _hasEntered.value,
     (hasLazyChildEntered) => {
       if (hasLazyChildEntered) {
         if (_shouldFireThresholdEnter.value) {
