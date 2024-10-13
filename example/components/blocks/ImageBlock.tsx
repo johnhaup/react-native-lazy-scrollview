@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from 'react';
+import React, { ComponentProps, useState } from 'react';
 import {
   ActivityIndicator,
   Image,

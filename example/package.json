@@ -28,14 +28,8 @@
     "@babel/core": "^7.24.0",
     "@expo/webpack-config": "~19.0.1",
     "@types/lodash": "^4.14.194",
-    "@types/react": "~18.2.79",
     "babel-loader": "^8.1.0",
     "babel-plugin-module-resolver": "^4.1.0"
   },
-  "private": true,
-  "eslintConfig": {
-    "rules": {
-      "react/react-in-jsx-scope": "off"
-    }
-  }
+  "private": true
 }

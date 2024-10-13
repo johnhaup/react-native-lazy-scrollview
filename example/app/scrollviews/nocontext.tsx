@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import React from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Blocks } from '../../components/blocks/Blocks';
 
 export default function NoContext() {

@@ -1,7 +1,6 @@
-import { useCallback } from 'react';
-
 import { chunk } from 'lodash';
 import shuffle from 'lodash/shuffle';
+import React, { useCallback } from 'react';
 import {
   Dimensions,
   ImageSourcePropType,

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   interpolate,
   useAnimatedStyle,
@@ -14,6 +14,7 @@ export function NoLazyCard() {
 
   useEffect(() => {
     animation.value = withRepeat(withTiming(1, { duration: 2000 }), -1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {
