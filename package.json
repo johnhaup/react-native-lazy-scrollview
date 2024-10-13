@@ -1,6 +1,6 @@
 {
   "name": "react-native-lazy-scrollview",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Lazy ScrollView for React Native.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
