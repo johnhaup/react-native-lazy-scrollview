@@ -1,14 +1,8 @@
 import React, { ComponentProps, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { SQUARE_SIZE } from '../../constants';
+import { Skeleton } from '../loaders/Skeleton';
 
 interface Props extends Omit<ComponentProps<typeof LazyChild>, 'children'> {
   source: ImageSourcePropType;
@@ -44,17 +38,11 @@ export function ImageBlock({ source, ...rest }: Props) {
         {...rest}
       >
         <View style={styles.contentContainer}>
-          {triggered ? (
+          <Skeleton show={!triggered}>
             <Image source={source} style={styles.image} />
-          ) : (
-            <ActivityIndicator />
-          )}
+          </Skeleton>
           {!isVisible && rest.percentVisibleThreshold ? (
-            <View style={styles.percentTextWrapper}>
-              <Text style={styles.percentText}>{`${
-                rest.percentVisibleThreshold * 100
-              } not visible`}</Text>
-            </View>
+            <View style={styles.percentTextWrapper}></View>
           ) : null}
         </View>
       </LazyChild>
@@ -93,11 +81,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  percentText: {
-    color: 'red',
-    fontSize: 16,
-    padding: 8,
-    textAlign: 'center',
   },
 });

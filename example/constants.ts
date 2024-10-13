@@ -40,7 +40,7 @@ export const VERTICAL = {
   title: 'Vertical Lazy ScrollView',
   color: '#1e90ff',
   description:
-    'LazyScrollView with vertical orientation.  Offset is set to -50, so threshold triggers will happen 50 points before the top and bottom edges of the scrollview container.  Visibility triggers will use the top and bottom edge of the scrollview container.',
+    'LazyScrollView with vertical orientation.  Offset is set to -50.  For this example, this means the LazyChild will show a Skeleton until it is 50 points from the top or bottom of the scrollview container (threshold callbacks) and will have a 50% opacity until it is fully visible (visibility callbacks).',
   image: require('./assets/vertical.png'),
 };
 
@@ -49,7 +49,7 @@ export const HORIZONTAL = {
   title: 'Horizontal Lazy ScrollView',
   color: '#7bed9f',
   description:
-    'LazyScrollView with horizontal orientation.  Offset is set to -50, so threshold triggers will happen 50 points before the left and right edges of the scrollview container.  Visibility triggers will use the left and right edge of the scrollview container.',
+    'LazyScrollView with horizontal orientation.  Offset is set to -50. For these examples, this means the LazyChild will show a Skeleton until it is 50 points from the left or right of the scrollview container (threshold callbacks) and will have a 50% opacity until it is fully visible (visibility callbacks).',
   image: require('./assets/horizontal.png'),
 };
 

@@ -54,7 +54,7 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
       <View
         key={`column-${index}`}
         style={[
-          { flexDirection: 'row' },
+          styles.container,
           index % 2 === 0 ? styles.offsetHorizontal : {},
         ]}
       >

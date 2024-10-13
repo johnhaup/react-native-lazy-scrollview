@@ -19,7 +19,7 @@ export default function App() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingTop: top, paddingBottom: bottom }}
+      contentContainerStyle={{ paddingTop: top, paddingBottom: bottom + 16 }}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.row}>
