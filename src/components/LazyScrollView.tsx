@@ -21,6 +21,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
+import { FRAME_MS } from '../constants';
 
 export interface LazyScrollViewMethods {
   scrollTo: typeof ScrollView.prototype.scrollTo;
@@ -123,7 +124,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
                 };
               }
             })();
-          }, 25);
+          }, FRAME_MS);
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
@@ -157,7 +158,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
 
     return (
       <Animated.ScrollView
-        scrollEventThrottle={16}
+        scrollEventThrottle={FRAME_MS}
         {...rest}
         ref={_scrollRef}
         onLayout={measureScrollView}

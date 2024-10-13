@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
+  runOnUI,
   useAnimatedReaction,
   useAnimatedRef,
   useDerivedValue,
@@ -11,6 +12,7 @@ import { useAnimatedContext } from '../../../context/AnimatedContext';
 import { useEnteringCallbacks } from '../hooks/useEnteringCallbacks';
 import { useVisibilityCallbacks } from '../hooks/useVisibilityCallbacks';
 import { LazyChildProps } from '../types';
+import { FRAME_MS } from '../../../constants';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -81,7 +83,9 @@ export function FullLazyChild({
       return null;
     },
     (measured) => {
-      _measurement.value = measured;
+      if (measured?.height || measured?.width) {
+        _measurement.value = measured;
+      }
     }
   );
 
@@ -111,7 +115,18 @@ export function FullLazyChild({
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
     // Don't measure until we know we have something.  This prevents those pesky Android measurement warnings.
     // https://github.com/software-mansion/react-native-reanimated/blob/d8ef9c27c31dd2c32d4c3a2111326a448bf19ec9/packages/react-native-reanimated/src/platformFunctions/measure.ts#L95
-    _canMeasure.value = nativeEvent.layout.height > 0;
+    if (nativeEvent.layout.height > 0) {
+      _canMeasure.value = true;
+      // Sometimes native measure runs too quick and return 0 on first paint.
+      setTimeout(() => {
+        runOnUI(() => {
+          const measurement = measure(_viewRef);
+          if (measurement) {
+            _measurement.value = measurement;
+          }
+        })();
+      }, FRAME_MS);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
   }, []);
 
