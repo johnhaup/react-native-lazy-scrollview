@@ -21,10 +21,6 @@ Example: Say you have some components lower in your scoll that make expensive ap
 - If a corresponding 'exit' callback is not provided for an 'enter' callback, after the 'enter' callback fires, measuring stops for that callback.
 - `scrollEventThrottle` defaults to 16.
 
-#### ⚠️ Limitations
-
-Currently only supports vertical ScrollView.
-
 ## Installation
 
 ```sh
