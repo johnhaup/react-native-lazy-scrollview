@@ -4,14 +4,8 @@ import React, {
   useCallback,
   useImperativeHandle,
   useMemo,
-  useRef,
 } from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  View,
-  type LayoutChangeEvent,
-} from 'react-native';
+import { ScrollView, StatusBar, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
   runOnJS,
@@ -62,11 +56,9 @@ type Props = LazyScrollViewProps &
 const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
   ({ children, offset: injectedOffset, debug = false, ...rest }, ref) => {
     const _scrollRef = useAnimatedRef<Animated.ScrollView>();
-    const _wrapperRef = useRef<View>(null);
     const _offset = useSharedValue(injectedOffset || 0);
     const _containerDimensions = useSharedValue({ width: 0, height: 0 });
     const _containerCoordinates = useSharedValue({ x: 0, y: 0 });
-    const _contentDimensions = useSharedValue({ width: 0, height: 0 });
     const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
     const _debug = useSharedValue(debug);
     const horizontal = useSharedValue(!!rest.horizontal);
@@ -150,23 +142,6 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
       []
     );
 
-    const measureContent = useCallback(
-      (e: LayoutChangeEvent) => {
-        const dimensions = {
-          height: e.nativeEvent.layout.height,
-          width: e.nativeEvent.layout.width,
-        };
-
-        if (debug) {
-          log('content dimensions:', dimensions);
-        }
-
-        _contentDimensions.value = dimensions;
-      },
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-      []
-    );
-
     const value = useMemo(
       () => ({
         _hasProvider: true,
@@ -189,9 +164,7 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
         onLayout={measureScrollView}
       >
         <AnimatedContext.Provider value={value}>
-          <View ref={_wrapperRef} onLayout={measureContent}>
-            {children}
-          </View>
+          {children}
         </AnimatedContext.Provider>
       </Animated.ScrollView>
     );
