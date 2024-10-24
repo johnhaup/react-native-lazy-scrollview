@@ -36,8 +36,8 @@ export interface LazyFlatListProps {
 
 type Props<T> = LazyFlatListProps &
   Omit<
-    React.ComponentProps<typeof Animated.FlatList<T>>,
-    'onLayout' | 'onScroll' | 'ref'
+    React.ComponentProps<typeof FlatList<T>>,
+    'onLayout' | 'onScroll' | 'ref' | 'CellRendererComponent'
   >;
 
 /**
