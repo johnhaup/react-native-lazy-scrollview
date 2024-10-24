@@ -1,13 +1,6 @@
-import React, { ComponentProps, useState } from 'react';
-import {
-  Dimensions,
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, { useState } from 'react';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
-import { SQUARE_SIZE } from '../../constants';
 import { Skeleton } from '../loaders/Skeleton';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
