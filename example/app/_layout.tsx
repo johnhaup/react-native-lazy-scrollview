@@ -11,6 +11,10 @@ export default function Layout() {
         options={{ title: 'Vertical Lazy' }}
       />
       <Stack.Screen
+        name="scrollviews/flatlist"
+        options={{ title: 'Lazy FlatList' }}
+      />
+      <Stack.Screen
         name="scrollviews/horizontal"
         options={{ title: 'Horizontal Lazy' }}
       />

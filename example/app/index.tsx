@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HorizontalCard } from '../components/cards/HorizontalCard';
 import { NoLazyCard } from '../components/cards/NoLazyCard';
 import { VerticalCard } from '../components/cards/VerticalCard';
+import { FlatListCard } from '../components/cards/FlatListCard';
 
 export default function App() {
   const { top, bottom } = useSafeAreaInsets();
@@ -32,6 +33,7 @@ export default function App() {
       </View>
       <VerticalCard />
       <HorizontalCard />
+      <FlatListCard />
       <NoLazyCard />
     </ScrollView>
   );
