@@ -44,6 +44,15 @@ export const VERTICAL = {
   image: require('./assets/vertical.png'),
 };
 
+export const FLATLIST = {
+  name: 'flatlist',
+  title: 'Lazy FlatList',
+  color: '#f8a5c2',
+  description:
+    'Less use cases than LazyScrollView, but still useful for situations where you need to measure headers or footers, or have specific cells react granularly to scroll visibility.  Not recommended to wrap every item in LazyChild.',
+  image: require('./assets/flatlist.png'),
+};
+
 export const HORIZONTAL = {
   name: 'horizontal',
   title: 'Horizontal Lazy ScrollView',
