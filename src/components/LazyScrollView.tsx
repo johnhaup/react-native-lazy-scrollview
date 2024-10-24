@@ -1,26 +1,12 @@
 import React, {
   MutableRefObject,
   forwardRef,
-  useCallback,
   useImperativeHandle,
-  useMemo,
 } from 'react';
-import { ScrollView, StatusBar, type LayoutChangeEvent } from 'react-native';
-import Animated, {
-  measure,
-  runOnJS,
-  runOnUI,
-  useAnimatedRef,
-  useDerivedValue,
-  useScrollViewOffset,
-  useSharedValue,
-} from 'react-native-reanimated';
+import { ScrollView } from 'react-native';
+import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
-import { logger } from '../utils/logger';
-
-const log = (...args: Parameters<typeof console.log>) => {
-  logger.log('<LazyScrollView>', ...args);
-};
+import { useLazyContextValues } from './useLazyContextValues';
 
 export interface LazyScrollViewMethods {
   scrollTo: typeof ScrollView.prototype.scrollTo;
@@ -56,12 +42,6 @@ type Props = LazyScrollViewProps &
 const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
   ({ children, offset: injectedOffset, debug = false, ...rest }, ref) => {
     const _scrollRef = useAnimatedRef<Animated.ScrollView>();
-    const _offset = useSharedValue(injectedOffset || 0);
-    const _containerDimensions = useSharedValue({ width: 0, height: 0 });
-    const _containerCoordinates = useSharedValue({ x: 0, y: 0 });
-    const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
-    const _debug = useSharedValue(debug);
-    const horizontal = useSharedValue(!!rest.horizontal);
 
     useImperativeHandle(ref, () => ({
       scrollTo: (options) => {
@@ -79,89 +59,19 @@ const LazyScrollView = forwardRef<LazyScrollViewMethods, Props>(
       },
     }));
 
-    /**
-     * Starts at 0 and increases as the user scrolls down
-     */
-    const scrollValue = useScrollViewOffset(_scrollRef);
-
-    const containerStart = useDerivedValue(() =>
-      horizontal.value
-        ? _containerCoordinates.value.x
-        : _containerCoordinates.value.y
-    );
-    const containerEnd = useDerivedValue(
-      () =>
-        (horizontal.value
-          ? _containerDimensions.value.width
-          : _containerDimensions.value.height) + containerStart.value
-    );
-
-    const startTrigger = useDerivedValue(
-      () => containerStart.value - _offset.value
-    );
-    const endTrigger = useDerivedValue(
-      () => containerEnd.value + _offset.value
-    );
-
-    const measureScrollView = useCallback(
-      (e: LayoutChangeEvent) => {
-        _containerDimensions.value = {
-          height: e.nativeEvent.layout.height,
-          width: e.nativeEvent.layout.width,
-        };
-
-        if (debug) {
-          log('dimensions:', {
-            height: _containerDimensions.value.height,
-            width: _containerDimensions.value.width,
-          });
-        }
-
-        // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
-        requestAnimationFrame(() => {
-          runOnUI(() => {
-            'worklet';
-            const measurement = measure(_scrollRef);
-
-            if (measurement) {
-              const coordinates = {
-                x: measurement.pageX,
-                y: measurement.pageY + _statusBarHeight.value,
-              };
-
-              if (_debug.value) {
-                runOnJS(log)('coordinates:', coordinates);
-              }
-
-              _containerCoordinates.value = coordinates;
-            }
-          })();
-        });
-      },
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-      []
-    );
-
-    const value = useMemo(
-      () => ({
-        _hasProvider: true,
-        scrollValue,
-        containerStart,
-        containerEnd,
-        startTrigger,
-        endTrigger,
-        horizontal,
-      }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-      []
-    );
+    const { value, measureScroller } = useLazyContextValues({
+      offset: injectedOffset,
+      debug,
+      horizontal: rest.horizontal,
+      ref: _scrollRef,
+    });
 
     return (
       <Animated.ScrollView
         scrollEventThrottle={16}
         {...rest}
         ref={_scrollRef}
-        onLayout={measureScrollView}
+        onLayout={measureScroller}
       >
         <AnimatedContext.Provider value={value}>
           {children}
