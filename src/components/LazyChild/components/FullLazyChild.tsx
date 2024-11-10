@@ -87,6 +87,7 @@ export function FullLazyChild({
 
   function measureView() {
     'worklet';
+
     const measurement = measure(_viewRef);
 
     if (_debug.value) {
@@ -142,6 +143,13 @@ export function FullLazyChild({
   });
 
   const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
+    if (
+      _isJsLayoutComplete.value &&
+      (!nativeEvent.layout.height || !nativeEvent.layout.width)
+    ) {
+      _isJsLayoutComplete.value = false;
+    }
+
     // Don't measure until we know we have something.
     if (nativeEvent.layout.height > 0 || nativeEvent.layout.width > 0) {
       // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
