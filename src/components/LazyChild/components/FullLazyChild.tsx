@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
@@ -38,6 +38,16 @@ export function FullLazyChild({
     containerEnd,
     horizontal,
   } = useAnimatedContext();
+
+  const _isMounted = useSharedValue(false);
+
+  useEffect(() => {
+    _isMounted.value = true;
+
+    return () => {
+      _isMounted.value = false;
+    };
+  }, [_isMounted]);
 
   /**
    * If onLayout returns a height or width value greater than 0.
