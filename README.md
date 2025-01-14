@@ -83,10 +83,9 @@ export function CoolComponentC() {
   // Fired when LazyChild has 75% visibility
   const onVisibilityEnter = async () => {
     analyticsCall();
-    setPaused(false);
   };
 
-  if (!data) {
+  if (!loading && !data) {
     // Trigger has fired and no data :(
     return null;
   }
