@@ -8,6 +8,7 @@ const initialContext = {
   startTrigger: { value: 0 },
   endTrigger: { value: 0 },
   horizontal: { value: false },
+  isScrollUnmounted: { value: false },
 };
 
 export const AnimatedContext = createContext(initialContext);

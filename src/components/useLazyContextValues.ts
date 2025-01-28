@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo } from 'react';
 import { StatusBar, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   AnimatedRef,
@@ -41,6 +41,14 @@ export const useLazyContextValues = ({
    * Starts at 0 and increases as the user scrolls down
    */
   const scrollValue = useScrollViewOffset(ref);
+
+  const isScrollUnmounted = useSharedValue(false);
+  useLayoutEffect(() => {
+    return () => {
+      isScrollUnmounted.value = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
+  }, []);
 
   const containerStart = useDerivedValue(() =>
     _horizontal.value
@@ -107,6 +115,7 @@ export const useLazyContextValues = ({
       startTrigger,
       endTrigger,
       horizontal: _horizontal,
+      isScrollUnmounted,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
     []
