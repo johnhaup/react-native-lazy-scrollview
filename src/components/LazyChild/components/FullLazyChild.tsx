@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
@@ -10,10 +10,10 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useAnimatedContext } from '../../../context/AnimatedContext';
+import { logger } from '../../../utils/logger';
 import { useEnteringCallbacks } from '../hooks/useEnteringCallbacks';
 import { useVisibilityCallbacks } from '../hooks/useVisibilityCallbacks';
 import { LazyChildProps } from '../types';
-import { logger } from '../../../utils/logger';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -37,17 +37,8 @@ export function FullLazyChild({
     containerStart,
     containerEnd,
     horizontal,
+    isScrollUnmounted,
   } = useAnimatedContext();
-
-  const _isMounted = useSharedValue(false);
-
-  useEffect(() => {
-    _isMounted.value = true;
-
-    return () => {
-      _isMounted.value = false;
-    };
-  }, [_isMounted]);
 
   /**
    * If onLayout returns a height or width value greater than 0.
@@ -64,25 +55,25 @@ export function FullLazyChild({
 
   const _debug = useSharedValue(debug);
 
-  const _shouldFireThresholdEnter = useSharedValue(
-    typeof onEnterThresholdPass === 'function'
-  );
-  const _shouldFireThresholdExit = useSharedValue(
-    typeof onExitThresholdPass === 'function'
-  );
-  const _shouldMeasurePercentVisible = useSharedValue(
-    typeof onVisibilityEnter === 'function'
-  );
-  const _shouldFireVisibilityExit = useSharedValue(
-    typeof onVisibilityExit === 'function'
-  );
+  const shouldFireThresholdEnter = useDerivedValue(() => {
+    return typeof onEnterThresholdPass === 'function' && !isScrollUnmounted;
+  });
+  const shouldFireThresholdExit = useDerivedValue(() => {
+    return typeof onExitThresholdPass === 'function' && !isScrollUnmounted;
+  });
+  const shouldMeasurePercentVisible = useDerivedValue(() => {
+    return typeof onVisibilityEnter === 'function' && !isScrollUnmounted;
+  });
+  const shouldFireVisibilityExit = useDerivedValue(() => {
+    return typeof onVisibilityExit === 'function' && !isScrollUnmounted;
+  });
 
   const _hasValidCallback = useDerivedValue(
     () =>
-      _shouldFireThresholdEnter.value ||
-      _shouldFireThresholdExit.value ||
-      _shouldMeasurePercentVisible.value ||
-      _shouldFireVisibilityExit.value
+      shouldFireThresholdEnter.value ||
+      shouldFireThresholdExit.value ||
+      shouldMeasurePercentVisible.value ||
+      shouldFireVisibilityExit.value
   );
 
   function measureView() {
@@ -123,8 +114,8 @@ export function FullLazyChild({
     onEnterThresholdPass,
     onExitThresholdPass,
     _measurement,
-    _shouldFireThresholdEnter,
-    _shouldFireThresholdExit,
+    shouldFireThresholdEnter,
+    shouldFireThresholdExit,
     startTrigger,
     endTrigger,
     horizontal,
@@ -134,8 +125,8 @@ export function FullLazyChild({
     percentVisibleThreshold,
     onVisibilityEnter,
     onVisibilityExit,
-    _shouldMeasurePercentVisible,
-    _shouldFireVisibilityExit,
+    shouldMeasurePercentVisible,
+    shouldFireVisibilityExit,
     _measurement,
     containerStart,
     containerEnd,

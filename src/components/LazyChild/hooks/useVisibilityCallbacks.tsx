@@ -12,8 +12,8 @@ interface Props {
   percentVisibleThreshold: number;
   onVisibilityEnter?: () => void;
   onVisibilityExit?: () => void;
-  _shouldMeasurePercentVisible: SharedValue<boolean>;
-  _shouldFireVisibilityExit: SharedValue<boolean>;
+  shouldMeasurePercentVisible: SharedValue<boolean>;
+  shouldFireVisibilityExit: SharedValue<boolean>;
   _measurement: SharedValue<ReturnType<typeof measure>>;
   containerStart: Pick<SharedValue<number>, 'value'>;
   containerEnd: Pick<SharedValue<number>, 'value'>;
@@ -24,8 +24,8 @@ export const useVisibilityCallbacks = ({
   percentVisibleThreshold,
   onVisibilityEnter,
   onVisibilityExit,
-  _shouldMeasurePercentVisible,
-  _shouldFireVisibilityExit,
+  shouldMeasurePercentVisible,
+  shouldFireVisibilityExit,
   _measurement,
   containerStart,
   containerEnd,
@@ -41,9 +41,9 @@ export const useVisibilityCallbacks = ({
         _hasFiredOnVisibilityEntered.value = true;
         _hasFiredOnVisibilityExited.value = false;
 
-        if (!_shouldFireVisibilityExit.value) {
+        if (!shouldFireVisibilityExit.value) {
           // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
-          _shouldMeasurePercentVisible.value = false;
+          shouldMeasurePercentVisible.value = false;
         }
 
         onVisibilityEnter();
@@ -96,11 +96,11 @@ export const useVisibilityCallbacks = ({
     () => _isVisible.value,
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
-        if (_shouldMeasurePercentVisible.value) {
+        if (shouldMeasurePercentVisible.value) {
           runOnJS(handleOnVisibilityEntered)();
         }
       } else {
-        if (_shouldFireVisibilityExit.value) {
+        if (shouldFireVisibilityExit.value) {
           runOnJS(handleOnVisibilityExited)();
         }
       }

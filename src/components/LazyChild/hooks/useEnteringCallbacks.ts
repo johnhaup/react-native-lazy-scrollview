@@ -12,8 +12,8 @@ export const useEnteringCallbacks = ({
   onEnterThresholdPass,
   onExitThresholdPass,
   _measurement,
-  _shouldFireThresholdEnter,
-  _shouldFireThresholdExit,
+  shouldFireThresholdEnter,
+  shouldFireThresholdExit,
   startTrigger,
   endTrigger,
   horizontal,
@@ -21,8 +21,8 @@ export const useEnteringCallbacks = ({
   onEnterThresholdPass?: () => void;
   onExitThresholdPass?: () => void;
   _measurement: SharedValue<ReturnType<typeof measure>>;
-  _shouldFireThresholdEnter: SharedValue<boolean>;
-  _shouldFireThresholdExit: SharedValue<boolean>;
+  shouldFireThresholdEnter: SharedValue<boolean>;
+  shouldFireThresholdExit: SharedValue<boolean>;
   startTrigger: Pick<SharedValue<number>, 'value'>;
   endTrigger: Pick<SharedValue<number>, 'value'>;
   horizontal: Pick<SharedValue<boolean>, 'value'>;
@@ -35,9 +35,9 @@ export const useEnteringCallbacks = ({
       _hasFiredThresholdEntered.value = true;
       _hasFiredThresholdExited.value = false;
 
-      if (!_shouldFireThresholdExit.value) {
+      if (!shouldFireThresholdExit.value) {
         // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
-        _shouldFireThresholdEnter.value = false;
+        shouldFireThresholdEnter.value = false;
       }
 
       onEnterThresholdPass();
@@ -78,11 +78,11 @@ export const useEnteringCallbacks = ({
     () => _hasEntered.value,
     (hasLazyChildEntered) => {
       if (hasLazyChildEntered) {
-        if (_shouldFireThresholdEnter.value) {
+        if (shouldFireThresholdEnter.value) {
           runOnJS(handleThresholdEntered)();
         }
       } else {
-        if (_shouldFireThresholdExit.value) {
+        if (shouldFireThresholdExit.value) {
           runOnJS(handleOnThresholdExited)();
         }
       }
