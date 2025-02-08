@@ -55,17 +55,30 @@ export function FullLazyChild({
 
   const _debug = useSharedValue(debug);
 
+  const _hasOnEnterCallback = useSharedValue(
+    typeof onEnterThresholdPass === 'function'
+  );
+  const _hasOnExitCallback = useSharedValue(
+    typeof onExitThresholdPass === 'function'
+  );
+  const _hasOnVisibilityEnterCallback = useSharedValue(
+    typeof onVisibilityEnter === 'function'
+  );
+  const _hasOnVisibilityExitCallback = useSharedValue(
+    typeof onVisibilityExit === 'function'
+  );
+
   const shouldFireThresholdEnter = useDerivedValue(() => {
-    return typeof onEnterThresholdPass === 'function' && !isScrollUnmounted;
+    return _hasOnEnterCallback.value && !isScrollUnmounted.value;
   });
   const shouldFireThresholdExit = useDerivedValue(() => {
-    return typeof onExitThresholdPass === 'function' && !isScrollUnmounted;
+    return _hasOnExitCallback.value && !isScrollUnmounted.value;
   });
   const shouldMeasurePercentVisible = useDerivedValue(() => {
-    return typeof onVisibilityEnter === 'function' && !isScrollUnmounted;
+    return _hasOnVisibilityEnterCallback.value && !isScrollUnmounted.value;
   });
   const shouldFireVisibilityExit = useDerivedValue(() => {
-    return typeof onVisibilityExit === 'function' && !isScrollUnmounted;
+    return _hasOnVisibilityExitCallback.value && !isScrollUnmounted.value;
   });
 
   const _hasValidCallback = useDerivedValue(
