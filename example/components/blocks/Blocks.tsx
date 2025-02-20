@@ -11,11 +11,23 @@ import { ALBUMS, SQUARE_SIZE } from '../../constants';
 import { FireOnceBlock } from '../blocks/FireOnceBlock';
 import { ImageBlock } from '../blocks/ImageBlock';
 import { NoLazyChild } from '../blocks/NoLazyChild';
+import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { useLazyScrollValue } from '../../../src';
+import { log } from '../../../src/utils/logger';
 
 export function Blocks({ horizontal }: { horizontal?: boolean }) {
   const chunks = chunk(
     shuffle(ALBUMS.concat(shuffle(ALBUMS)).concat(shuffle(ALBUMS))),
     9
+  );
+
+  const scrollValue = useLazyScrollValue();
+
+  useAnimatedReaction(
+    () => scrollValue.value,
+    (value) => {
+      runOnJS(log)('scrollValue', value);
+    }
   );
 
   const renderBlock = useCallback(
@@ -29,7 +41,6 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
           <FireOnceBlock
             key={`fire-once-child-${index}`}
             percentVisibleThreshold={1}
-            debug
           />
         );
       }
@@ -39,7 +50,6 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
           key={`${source.toString()}-${index}`}
           source={source}
           percentVisibleThreshold={1}
-          debug
         />
       );
     },
