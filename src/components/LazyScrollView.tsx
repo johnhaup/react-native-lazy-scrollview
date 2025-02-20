@@ -1,9 +1,10 @@
 import React, {
+  BaseSyntheticEvent,
   MutableRefObject,
   forwardRef,
   useImperativeHandle,
 } from 'react';
-import { ScrollView } from 'react-native';
+import { NativeScrollEvent, ScrollView } from 'react-native';
 import Animated, { useAnimatedRef } from 'react-native-reanimated';
 import { AnimatedContext } from '../context/AnimatedContext';
 import { useLazyContextValues } from './useLazyContextValues';
@@ -13,6 +14,8 @@ export interface LazyScrollViewMethods {
   scrollToStart: typeof ScrollView.prototype.scrollToEnd;
   scrollToEnd: typeof ScrollView.prototype.scrollToEnd;
 }
+
+type AnimatedSyntheticEvent = BaseSyntheticEvent<NativeScrollEvent, any, any>;
 
 export interface LazyScrollViewProps {
   /**
@@ -28,12 +31,16 @@ export interface LazyScrollViewProps {
    * When true, console.logs scrollview measurements.  Even if true, will not call console.log in production.
    */
   debug?: boolean;
+  /**
+   * Scroll handler for the LazyScrollView.
+   */
+  onScroll?: (event: AnimatedSyntheticEvent) => void;
 }
 
 type Props = LazyScrollViewProps &
   Omit<
     React.ComponentProps<typeof Animated.ScrollView>,
-    'onLayout' | 'onScroll' | 'ref'
+    'onLayout' | 'ref' | 'onScroll'
   >;
 
 /**
