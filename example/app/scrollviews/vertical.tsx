@@ -6,11 +6,33 @@ import {
 } from 'react-native-lazy-scrollview';
 import { PADDING_VERTICAL } from '../../constants';
 import { Blocks } from '../../components/blocks/Blocks';
+import {
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 const OFFSET = -50;
 
 export default function VerticalScrollView() {
   const ref = useRef<LazyScrollViewMethods>(null);
+
+  const offsetY = useSharedValue(0);
+  const log = (...args: Parameters<typeof console.log>) => {
+    console.log(...args);
+  };
+
+  useAnimatedReaction(
+    () => offsetY.value,
+    (value) => {
+      runOnJS(log)('offsetY', value);
+    }
+  );
+
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    offsetY.value = event.contentOffset.y;
+  });
 
   return (
     <View style={styles.scrollviewContainer}>
@@ -18,7 +40,7 @@ export default function VerticalScrollView() {
         ref={ref}
         offset={OFFSET}
         showsVerticalScrollIndicator={false}
-        debug
+        onScroll={scrollHandler}
       >
         <Blocks />
       </LazyScrollView>
