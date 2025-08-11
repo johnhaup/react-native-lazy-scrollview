@@ -42,8 +42,13 @@ export const useEnteringCallbacks = ({
 
       onEnterThresholdPass();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-  }, [onEnterThresholdPass]);
+  }, [
+    _hasFiredThresholdEntered,
+    _hasFiredThresholdExited,
+    onEnterThresholdPass,
+    shouldFireThresholdEnter,
+    shouldFireThresholdExit,
+  ]);
 
   const handleOnThresholdExited = useCallback(() => {
     if (
@@ -56,8 +61,11 @@ export const useEnteringCallbacks = ({
 
       onExitThresholdPass();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-  }, [onExitThresholdPass]);
+  }, [
+    _hasFiredThresholdEntered,
+    _hasFiredThresholdExited,
+    onExitThresholdPass,
+  ]);
 
   const _hasEntered = useDerivedValue(() => {
     if (_measurement.value !== null) {

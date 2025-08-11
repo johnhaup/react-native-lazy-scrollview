@@ -47,8 +47,7 @@ export const useLazyContextValues = ({
     return () => {
       isScrollUnmounted.value = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-  }, []);
+  }, [isScrollUnmounted]);
 
   const containerStart = useDerivedValue(() =>
     _horizontal.value
@@ -102,8 +101,14 @@ export const useLazyContextValues = ({
         })();
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    []
+    [
+      _containerCoordinates,
+      _containerDimensions,
+      _debug,
+      _statusBarHeight,
+      debug,
+      ref,
+    ]
   );
 
   const value = useMemo(
@@ -117,8 +122,15 @@ export const useLazyContextValues = ({
       horizontal: _horizontal,
       isScrollUnmounted,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    []
+    [
+      _horizontal,
+      containerEnd,
+      containerStart,
+      endTrigger,
+      isScrollUnmounted,
+      scrollValue,
+      startTrigger,
+    ]
   );
 
   return { value, measureScroller };

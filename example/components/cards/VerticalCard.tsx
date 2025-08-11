@@ -14,8 +14,8 @@ export function VerticalCard() {
 
   useEffect(() => {
     animation.value = withRepeat(withTiming(1, { duration: 1000 }), -1, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [animation]);
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       marginRight: 16,

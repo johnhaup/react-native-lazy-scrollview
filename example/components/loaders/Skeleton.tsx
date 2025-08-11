@@ -38,8 +38,7 @@ const BaseSkeleton: React.FC<SkeletonProps> = ({
 
   React.useEffect(() => {
     shared.value = withRepeat(withTiming(1, { duration: 1000 }), Infinity);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [shared]);
 
   if (!layout) {
     return (
