@@ -146,26 +146,28 @@ export function FullLazyChild({
     horizontal,
   });
 
-  const onLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-    if (
-      _isJsLayoutComplete.value &&
-      (!nativeEvent.layout.height || !nativeEvent.layout.width)
-    ) {
-      _isJsLayoutComplete.value = false;
-    }
+  const onLayout = useCallback(
+    ({ nativeEvent }: LayoutChangeEvent) => {
+      if (
+        _isJsLayoutComplete.value &&
+        (!nativeEvent.layout.height || !nativeEvent.layout.width)
+      ) {
+        _isJsLayoutComplete.value = false;
+      }
 
-    // Don't measure until we know we have something.
-    if (nativeEvent.layout.height > 0 || nativeEvent.layout.width > 0) {
-      // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
-      requestAnimationFrame(() => {
-        runOnUI(() => {
-          'worklet';
-          _isJsLayoutComplete.value = true;
-        })();
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-  }, []);
+      // Don't measure until we know we have something.
+      if (nativeEvent.layout.height > 0 || nativeEvent.layout.width > 0) {
+        // onLayout runs when RN finishes render, but native layout may not be fully settled until the next frame.
+        requestAnimationFrame(() => {
+          runOnUI(() => {
+            'worklet';
+            _isJsLayoutComplete.value = true;
+          })();
+        });
+      }
+    },
+    [_isJsLayoutComplete]
+  );
 
   return (
     <Animated.View ref={_viewRef} onLayout={onLayout}>

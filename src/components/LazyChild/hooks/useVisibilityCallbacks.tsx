@@ -35,40 +35,42 @@ export const useVisibilityCallbacks = ({
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
   const _hasFiredOnVisibilityExited = useSharedValue(false);
 
-  const handleOnVisibilityEntered = useCallback(
-    () => {
-      if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
-        _hasFiredOnVisibilityEntered.value = true;
-        _hasFiredOnVisibilityExited.value = false;
+  const handleOnVisibilityEntered = useCallback(() => {
+    if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
+      _hasFiredOnVisibilityEntered.value = true;
+      _hasFiredOnVisibilityExited.value = false;
 
-        if (!shouldFireVisibilityExit.value) {
-          // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
-          shouldMeasurePercentVisible.value = false;
-        }
-
-        onVisibilityEnter();
+      if (!shouldFireVisibilityExit.value) {
+        // Enter callback has fired and there is no exit callback, so it cannot refire.  Set shouldFire to false to prevent unnecessary measures.
+        shouldMeasurePercentVisible.value = false;
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    [onVisibilityEnter]
-  );
 
-  const handleOnVisibilityExited = useCallback(
-    () => {
-      if (
-        onVisibilityExit &&
-        _hasFiredOnVisibilityEntered.value &&
-        !_hasFiredOnVisibilityExited.value
-      ) {
-        _hasFiredOnVisibilityEntered.value = false;
-        _hasFiredOnVisibilityExited.value = true;
+      onVisibilityEnter();
+    }
+  }, [
+    _hasFiredOnVisibilityEntered,
+    _hasFiredOnVisibilityExited,
+    onVisibilityEnter,
+    shouldFireVisibilityExit,
+    shouldMeasurePercentVisible,
+  ]);
 
-        onVisibilityExit();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- shared values do not trigger re-renders
-    [onVisibilityExit]
-  );
+  const handleOnVisibilityExited = useCallback(() => {
+    if (
+      onVisibilityExit &&
+      _hasFiredOnVisibilityEntered.value &&
+      !_hasFiredOnVisibilityExited.value
+    ) {
+      _hasFiredOnVisibilityEntered.value = false;
+      _hasFiredOnVisibilityExited.value = true;
+
+      onVisibilityExit();
+    }
+  }, [
+    _hasFiredOnVisibilityEntered,
+    _hasFiredOnVisibilityExited,
+    onVisibilityExit,
+  ]);
 
   const _isVisible = useDerivedValue(() => {
     if (_measurement.value !== null) {
