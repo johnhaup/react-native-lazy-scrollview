@@ -19,7 +19,7 @@ type AnimatedSyntheticEvent = BaseSyntheticEvent<NativeScrollEvent, any, any>;
 
 export interface LazyScrollViewProps {
   /**
-   * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below. Accepts [ScrollView props](https://reactnative.dev/docs/scrollview).
+   * How far above or below the bottom of the ScrollView the threshold trigger is. Negative is above, postive it below.
    * @defaultValue 0 (bottom of ScrollView)
    */
   offset?: number;

@@ -32,6 +32,10 @@ export interface LazyChildProps extends LazyChildCallbacks {
    */
   percentVisibleThreshold?: number;
   /**
+   * How long the LazyChild should be visible before the onVisibilityEnter callback is fired. If undefined, will fire immediately.
+   */
+  minimumVisibilityMs?: number;
+  /**
    * When true, console.logs LazyChilds measurement data.  Even if true, will not call console.log in production.
    */
   debug?: boolean;
