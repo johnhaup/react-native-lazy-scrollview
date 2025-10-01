@@ -7,7 +7,6 @@ import {
   useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
-  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -102,28 +101,33 @@ export const useVisibilityCallbacks = ({
 
   useAnimatedReaction(
     () => _isVisible.value,
-    (isLazyChildVisible) => {
-      if (isLazyChildVisible) {
+    (isLazyChildVisible, prevIsVisible) => {
+      if (isLazyChildVisible && !prevIsVisible) {
         if (shouldMeasurePercentVisible.value) {
           if (_visibilityTimer.value > 0) {
             cancelAnimation(_visibilityTimer);
             _visibilityTimer.value = 0;
           }
 
-          if (minimumVisibilityMs) {
-            _visibilityTimer.value = withDelay(
-              minimumVisibilityMs,
-              withTiming(1, { duration: 0 }, (finished) => {
+          if (minimumVisibilityMs && minimumVisibilityMs > 0) {
+            _visibilityTimer.value = withTiming(
+              1,
+              { duration: minimumVisibilityMs },
+              (finished) => {
                 if (finished) {
                   runOnJS(handleOnVisibilityEntered)();
                 }
-              })
+              }
             );
           } else {
             runOnJS(handleOnVisibilityEntered)();
           }
         }
-      } else {
+      }
+
+      if (!isLazyChildVisible && prevIsVisible) {
+        cancelAnimation(_visibilityTimer);
+
         if (shouldFireVisibilityExit.value) {
           runOnJS(handleOnVisibilityExited)();
         }
