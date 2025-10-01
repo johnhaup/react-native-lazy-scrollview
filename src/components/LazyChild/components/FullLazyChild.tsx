@@ -28,6 +28,7 @@ export function FullLazyChild({
   percentVisibleThreshold = 1,
   onVisibilityEnter,
   onVisibilityExit,
+  minimumVisibilityMs,
   debug = false,
 }: LazyChildProps) {
   const {
@@ -144,6 +145,7 @@ export function FullLazyChild({
     containerStart,
     containerEnd,
     horizontal,
+    minimumVisibilityMs,
   });
 
   const onLayout = useCallback(

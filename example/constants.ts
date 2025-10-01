@@ -19,6 +19,8 @@ export const ALBUMS = [
   'no-lazy',
   'fire-once',
   'fire-once',
+  'ms-visibility',
+  // 'ms-visibility',
 ];
 
 export const SHUFFLED_ALBUMS = shuffle(ALBUMS);

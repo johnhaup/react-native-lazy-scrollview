@@ -14,6 +14,7 @@ import { NoLazyChild } from '../blocks/NoLazyChild';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 import { useLazyScrollValue } from '../../../src';
 import { log } from '../../../src/utils/logger';
+import { MsVisibility } from './MsVisibility';
 
 export function Blocks({ horizontal }: { horizontal?: boolean }) {
   const chunks = chunk(
@@ -31,7 +32,10 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
   );
 
   const renderBlock = useCallback(
-    (source: ImageSourcePropType | 'no-lazy' | 'fire-once', index: number) => {
+    (
+      source: ImageSourcePropType | 'no-lazy' | 'fire-once' | 'ms-visibility',
+      index: number
+    ) => {
       if (source === 'no-lazy') {
         return <NoLazyChild key={`no-lazy-child-${index}`} />;
       }
@@ -43,6 +47,10 @@ export function Blocks({ horizontal }: { horizontal?: boolean }) {
             percentVisibleThreshold={1}
           />
         );
+      }
+
+      if (source === 'ms-visibility') {
+        return <MsVisibility key={`ms-visibility-child-${index}`} />;
       }
 
       return (
