@@ -1,17 +1,21 @@
 import { useCallback } from 'react';
 import {
   SharedValue,
+  cancelAnimation,
   measure,
   runOnJS,
   useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
+  withDelay,
+  withTiming,
 } from 'react-native-reanimated';
 
 interface Props {
   percentVisibleThreshold: number;
   onVisibilityEnter?: () => void;
   onVisibilityExit?: () => void;
+  minimumVisibilityMs?: number;
   shouldMeasurePercentVisible: SharedValue<boolean>;
   shouldFireVisibilityExit: SharedValue<boolean>;
   _measurement: SharedValue<ReturnType<typeof measure>>;
@@ -24,6 +28,7 @@ export const useVisibilityCallbacks = ({
   percentVisibleThreshold,
   onVisibilityEnter,
   onVisibilityExit,
+  minimumVisibilityMs,
   shouldMeasurePercentVisible,
   shouldFireVisibilityExit,
   _measurement,
@@ -34,6 +39,7 @@ export const useVisibilityCallbacks = ({
   const _percentVisibleTrigger = useSharedValue(percentVisibleThreshold);
   const _hasFiredOnVisibilityEntered = useSharedValue(false);
   const _hasFiredOnVisibilityExited = useSharedValue(false);
+  const _visibilityTimer = useSharedValue(0);
 
   const handleOnVisibilityEntered = useCallback(() => {
     if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
@@ -99,7 +105,23 @@ export const useVisibilityCallbacks = ({
     (isLazyChildVisible) => {
       if (isLazyChildVisible) {
         if (shouldMeasurePercentVisible.value) {
-          runOnJS(handleOnVisibilityEntered)();
+          if (_visibilityTimer.value > 0) {
+            cancelAnimation(_visibilityTimer);
+            _visibilityTimer.value = 0;
+          }
+
+          if (minimumVisibilityMs) {
+            _visibilityTimer.value = withDelay(
+              minimumVisibilityMs,
+              withTiming(1, { duration: 0 }, (finished) => {
+                if (finished) {
+                  runOnJS(handleOnVisibilityEntered)();
+                }
+              })
+            );
+          } else {
+            runOnJS(handleOnVisibilityEntered)();
+          }
         }
       } else {
         if (shouldFireVisibilityExit.value) {
