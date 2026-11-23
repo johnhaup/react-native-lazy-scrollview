@@ -9,7 +9,13 @@
 
 [![CI](https://github.com/johnhaup/react-native-lazy-scrollview/actions/workflows/ci.yml/badge.svg)](https://github.com/johnhaup/react-native-lazy-scrollview/actions/workflows/ci.yml)
 
-Provides an api to react to allow child components of `ScrollView` or `FlatList` to easily manage their visibility states on their own, instead of at a list level. This is done by measuring children on the UI thread and only firing back to JS when a defined threshold has been passed.
+Let each section of a `ScrollView` or `FlatList` react to its own visibility: fetch data just before it scrolls into view, autoplay video while it is on screen, log an impression after it has been seen for a moment.
+
+Unlike `FlatList`'s `onViewableItemsChanged`, the logic lives on the child instead of the list, it works in a plain `ScrollView`, and it can fire before the child reaches the screen. Children are measured on the UI thread with Reanimated, and JS only hears about it when a threshold is crossed.
+
+<p align="center">
+  <img alt="demo" width=300 src="__tests__/demo.gif">
+</p>
 
 ## Installation
 
@@ -85,7 +91,7 @@ _Extends [Flatlist props](https://reactnative.dev/docs/flatlist), omitting `onLa
 | **onVisibilityEnter**       | `() => void`      | No       | Fires when the child’s viewable area exceeds the `percentVisibleThreshold`. Only fires once and stops measuring if `onVisibilityExit` is not provided.      |
 | **onVisibilityExit**        | `() => void`      | No       | Fires when the child’s viewable area goes under the `percentVisibleThreshold` **after being above it**. Will not fire if `onVisibilityEnter` has not fired. |
 | **children**                | `React.ReactNode` | Yes      | The child component(s) to wrap.                                                                                                                             |
-| **percentVisibleThreshold** | `number`          | No       | Fraction of the child that must be visible before `onVisibilityEnter` fires. Example: `0.5` = 50% visible. **Default:** `1.0`.                              |
+| **percentVisibleThreshold** | `number`          | No       | Fraction of the child that must be visible before `onVisibilityEnter` fires. Example: `0.5` = 50% visible. A child larger than the list counts as fully visible when it fills it. **Default:** `1.0`. |
 | **minimumVisibilityMs**     | `number`          | No       | Minimum time (ms) the child must remain visible before `onVisibilityEnter` fires. If `undefined`, fires immediately.                                        |
 | **debug**                   | `boolean`         | No       | When `true`, logs measurement data for debugging. Logs are disabled in production.                                                                          |
 
@@ -103,11 +109,15 @@ import {
 } from './components';
 
 export function MyCoolHomeScreen() {
-  const ref = useRef < LazyScrollViewMethods > null;
+  const ref = useRef<LazyScrollViewMethods>(null);
 
   return (
     // Trigger entering/exiting callbacks when child is 300 pixels outside of scrollview's bounds
-    <LazyScrollView offset={300} showsVerticalScrollIndicator={false}>
+    <LazyScrollView
+      ref={ref}
+      offset={300}
+      showsVerticalScrollIndicator={false}
+    >
       <CoolComponentA />
       <PriceMasterVideo />
       <CoolComponentB />
@@ -120,7 +130,6 @@ export function MyCoolHomeScreen() {
 }
 
 // CoolComponentC.tsx
-import { View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { ContentView, SkeletonLoader } from './components';
 
@@ -161,11 +170,10 @@ export function CoolComponentC() {
 }
 
 // PriceMasterVideo.tsx
-import { View } from 'react-native';
 import { LazyChild } from 'react-native-lazy-scrollview';
 import { ContentView, SkeletonLoader, VideoPlayer } from './components';
 
-const videoURl = 'https://youtu.be/wfJnni0oBPE?si=kRdIUcq4l5dfGfqV';
+const videoUrl = 'https://youtu.be/wfJnni0oBPE?si=kRdIUcq4l5dfGfqV';
 
 export function PriceMasterVideo() {
   const [data, setData] = useState(null);

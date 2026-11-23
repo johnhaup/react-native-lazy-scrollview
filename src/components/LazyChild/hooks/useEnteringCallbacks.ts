@@ -7,6 +7,7 @@ import {
   useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
+import { isWithinTriggers } from '../../../utils/geometry';
 
 export const useEnteringCallbacks = ({
   onEnterThresholdPass,
@@ -73,10 +74,12 @@ export const useEnteringCallbacks = ({
       const startOfView = horizontal.value ? pageX : pageY;
       const endOfView = startOfView + (horizontal.value ? width : height);
 
-      const result =
-        startOfView < endTrigger.value && endOfView > startTrigger.value;
-
-      return result;
+      return isWithinTriggers(
+        startOfView,
+        endOfView,
+        startTrigger.value,
+        endTrigger.value
+      );
     }
 
     return false;
@@ -84,7 +87,12 @@ export const useEnteringCallbacks = ({
 
   useAnimatedReaction(
     () => _hasEntered.value,
-    (hasLazyChildEntered) => {
+    (hasLazyChildEntered, prevHasEntered) => {
+      // Reactions run on every measurement, not only on change: only cross to JS when it flips.
+      if (hasLazyChildEntered === prevHasEntered) {
+        return;
+      }
+
       if (hasLazyChildEntered) {
         if (shouldFireThresholdEnter.value) {
           runOnJS(handleThresholdEntered)();

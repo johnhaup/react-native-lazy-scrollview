@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+import { isPercentVisible } from '../../../utils/geometry';
 import {
   SharedValue,
   cancelAnimation,
@@ -40,6 +41,10 @@ export const useVisibilityCallbacks = ({
   const _hasFiredOnVisibilityExited = useSharedValue(false);
   const _visibilityTimer = useSharedValue(0);
 
+  useEffect(() => {
+    _percentVisibleTrigger.value = percentVisibleThreshold;
+  }, [_percentVisibleTrigger, percentVisibleThreshold]);
+
   const handleOnVisibilityEntered = useCallback(() => {
     if (onVisibilityEnter && !_hasFiredOnVisibilityEntered.value) {
       _hasFiredOnVisibilityEntered.value = true;
@@ -80,19 +85,13 @@ export const useVisibilityCallbacks = ({
   const _isVisible = useDerivedValue(() => {
     if (_measurement.value !== null) {
       const { pageX, pageY, width, height } = _measurement.value;
-      const startOfView = horizontal.value ? pageX : pageY;
-      const endOfView = startOfView + (horizontal.value ? width : height);
 
-      const visibilitySize = height * _percentVisibleTrigger.value;
-      const visibleEnterTrigger = containerEnd.value - visibilitySize;
-      const visibleExitTrigger = containerStart.value + visibilitySize;
-
-      if (visibleEnterTrigger <= 0) {
-        return false;
-      }
-
-      return (
-        startOfView < visibleEnterTrigger && endOfView > visibleExitTrigger
+      return isPercentVisible(
+        horizontal.value ? pageX : pageY,
+        horizontal.value ? width : height,
+        containerStart.value,
+        containerEnd.value,
+        _percentVisibleTrigger.value
       );
     }
 

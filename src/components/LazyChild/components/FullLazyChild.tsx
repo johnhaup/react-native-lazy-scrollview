@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   measure,
@@ -56,18 +56,36 @@ export function FullLazyChild({
 
   const _debug = useSharedValue(debug);
 
-  const _hasOnEnterCallback = useSharedValue(
-    typeof onEnterThresholdPass === 'function'
-  );
-  const _hasOnExitCallback = useSharedValue(
-    typeof onExitThresholdPass === 'function'
-  );
-  const _hasOnVisibilityEnterCallback = useSharedValue(
-    typeof onVisibilityEnter === 'function'
-  );
-  const _hasOnVisibilityExitCallback = useSharedValue(
-    typeof onVisibilityExit === 'function'
-  );
+  const hasOnEnter = typeof onEnterThresholdPass === 'function';
+  const hasOnExit = typeof onExitThresholdPass === 'function';
+  const hasOnVisibilityEnter = typeof onVisibilityEnter === 'function';
+  const hasOnVisibilityExit = typeof onVisibilityExit === 'function';
+
+  const _hasOnEnterCallback = useSharedValue(hasOnEnter);
+  const _hasOnExitCallback = useSharedValue(hasOnExit);
+  const _hasOnVisibilityEnterCallback = useSharedValue(hasOnVisibilityEnter);
+  const _hasOnVisibilityExitCallback = useSharedValue(hasOnVisibilityExit);
+
+  useEffect(() => {
+    _debug.value = debug;
+  }, [_debug, debug]);
+
+  // Keyed on presence, not identity: inline callbacks would otherwise reset these every render.
+  useEffect(() => {
+    _hasOnEnterCallback.value = hasOnEnter;
+    _hasOnExitCallback.value = hasOnExit;
+    _hasOnVisibilityEnterCallback.value = hasOnVisibilityEnter;
+    _hasOnVisibilityExitCallback.value = hasOnVisibilityExit;
+  }, [
+    _hasOnEnterCallback,
+    _hasOnExitCallback,
+    _hasOnVisibilityEnterCallback,
+    _hasOnVisibilityExitCallback,
+    hasOnEnter,
+    hasOnExit,
+    hasOnVisibilityEnter,
+    hasOnVisibilityExit,
+  ]);
 
   const shouldFireThresholdEnter = useDerivedValue(() => {
     return _hasOnEnterCallback.value && !isScrollUnmounted.value;

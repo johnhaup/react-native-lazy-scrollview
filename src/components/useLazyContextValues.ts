@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { StatusBar, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   AnimatedRef,
@@ -36,6 +36,12 @@ export const useLazyContextValues = ({
   const _statusBarHeight = useSharedValue(StatusBar.currentHeight || 0);
   const _debug = useSharedValue(debug);
   const _horizontal = useSharedValue(!!horizontal);
+
+  useEffect(() => {
+    _offset.value = injectedOffset || 0;
+    _debug.value = debug;
+    _horizontal.value = !!horizontal;
+  }, [_debug, _horizontal, _offset, debug, horizontal, injectedOffset]);
 
   /**
    * Starts at 0 and increases as the user scrolls down
